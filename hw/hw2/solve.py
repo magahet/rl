@@ -3,7 +3,7 @@
 import sympy as sp
 
 
-def solve_poly(v1, v2, v3, v4, v5, v6):
+def solve_poly(v1, v2, v3, v4, v5, v6, every=False):
     x = sp.symbols('x')
     e1, e2, e3, e4, e5, e6 = sp.symbols('e1:7')
     f = ((1-x)*(e1+e2*x+e3*x**2+e4*x**3+e5*x**4) +
@@ -14,11 +14,13 @@ def solve_poly(v1, v2, v3, v4, v5, v6):
     print solutions
     if not solutions:
         return None
+    elif every:
+        return solutions
     else:
         return solutions[0]
 
 
-def solve(prob1, v_est, reward):
+def solve(prob1, v_est, reward, every=False):
     prob2 = 1 - prob1
 
     v1 = (prob1 * (reward[0] + v_est[1]) +
@@ -39,7 +41,7 @@ def solve(prob1, v_est, reward):
     v6 = (prob1 * (reward[0] + reward[2] + sum(reward[4:7])) +
           prob2 * (reward[1] + reward[3] + sum(reward[4:7])))
 
-    return solve_poly(v1, v2, v3, v4, v5, v6)
+    return solve_poly(v1, v2, v3, v4, v5, v6, every=every)
 
 
 probToState1 = 0.5

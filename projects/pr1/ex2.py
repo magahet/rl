@@ -1,14 +1,14 @@
-import time
 import numpy as np
 import matplotlib.pyplot as plt
+from timeit import default_timer as timer
 
 
-def batch_td(training_episodes, w=None, lambda_=0.1, alpha=0.001, epsilon=1e-7):
+def batch_td(training_episodes, w=None, lambda_=0.3, alpha=0.025, epsilon=1e-7):
     num_states = len(training_episodes[0][0])
     if w is None:
         w = np.ones(num_states) * 0.5
     delta_w = w + 1
-    start = time.time()
+    start = timer()
     while np.linalg.norm(delta_w) > epsilon:
     # for i in xrange(5):
         delta_w = np.zeros(num_states)
@@ -36,9 +36,9 @@ def batch_td(training_episodes, w=None, lambda_=0.1, alpha=0.001, epsilon=1e-7):
 
         w += delta_w
 
-        if time.time() - start > 2:
+        if timer() - start > 2:
             print 'delta_w norm:', np.linalg.norm(delta_w), w
-            start = time.time()
+            start = timer()
 
     return w
 
@@ -63,14 +63,22 @@ def walk(num_states):
 
 
 def get_true_w(num_states):
-    true_w = np.array([float(i) / num_states for i in xrange(num_states)])
-    true_w[-1] = 0.0
+    true_w = np.array([float(i) / (num_states + 1) for i in xrange(1, num_states + 1)])
     return true_w
 
 
 def rmse(v1):
     v2 = get_true_w(len(v1))
     return np.sqrt(np.mean(np.square(v1 - v2)))
+
+
+def find_alpha():
+    training_set = [walk(5) for _ in xrange(10)]
+    for alpha in np.arange(0.001, 0.101, 0.001):
+        start = timer()
+        e = rmse(batch_td(training_set, alpha=alpha, lambda_=0))
+        end = timer()
+        print alpha, e, end - start
 
 
 def fig3():
@@ -80,12 +88,12 @@ def fig3():
     errors_by_lambda = []
 
     for lambda_ in lambda_range:
-        print 'lambda:', lambda_
         errors = []
         for training_set in training_sets:
             w = batch_td(training_set, lambda_=lambda_)
             errors.append(rmse(w))
         errors_by_lambda.append(np.mean(errors))
+        print 'lambda:', lambda_, 'rmse:', errors_by_lambda[-1]
 
     build_plot(lambda_range, errors_by_lambda, 'lambda', 'RMSE')
     return lambda_range, errors_by_lambda

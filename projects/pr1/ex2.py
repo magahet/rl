@@ -3,40 +3,60 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def batch_td(num_states, training_episodes, w=None, lambda_=0.3, alpha=0.005, epsilon=1e-5):
+def batch_td(training_episodes, w=None, lambda_=0.3, alpha=0.005, epsilon=1e-7):
+    num_states = len(training_episodes[0][0])
     if w is None:
         w = np.zeros(num_states) * 0.5
-    
-    w_gradient  = w + 1
+    delta_w = w + 1
     start = time.time()
-    while np.linalg.norm(w_gradient) > epsilon:
+    while np.linalg.norm(delta_w) > epsilon:
         for episode in training_episodes:
             e = np.zeros(num_states)
-            w_gradient = np.zeros(num_states)
-            s0 = episode[0]
-            r = 0
-            for s in episode:
-                if s == num_states - 1:
-                    r = 1
-                w_gradient = alpha * (r + w[s] - w[s0]) * e
-                e[s0] += 1
-                e *= lambda_
-                s0 = s
-            w += w_gradient
+            delta_w = np.zeros(num_states)
+            x0 = episode[0]
+            P0 = w.dot(x0)
+
+            for n, x in enumerate(episode[1:]):
+                terminal = n == len(episode) - 2
+                e += x0
+
+                if terminal:
+                    P = x
+                else:
+                    P = w.dot(x)
+
+                delta_w += alpha * (P - P0) * e
+
+                if not terminal:
+                    e *= lambda_
+                    x0 = x.copy()
+                    P0 = P
+
+            w += delta_w
 
         if time.time() - start > 2:
-            print 'w gradient norm:', np.linalg.norm(w_gradient)
+            print 'delta_w norm:', np.linalg.norm(delta_w), w
             start = time.time()
 
     return w
 
 
 def walk(num_states):
+    def to_array(state):
+        v = np.zeros(num_states)
+        v[state] = 1
+        return v
+
     state = int(np.median(range(num_states)))
-    episode = [state]
-    while state not in (0, num_states - 1):
+    episode = [to_array(state)]
+    while state not in (-1, num_states):
         state += np.random.choice((-1, 1))
-        episode.append(state)
+        if state == -1:
+            episode.append(0)
+        elif state == num_states:
+            episode.append(1)
+        else:
+            episode.append(to_array(state))
     return episode
 
 
@@ -77,11 +97,11 @@ def build_plot(x, y, xlab, ylab):
 
 
 def test():
-    training_set = [walk(7) for _ in xrange(10)]
+    training_set = [walk(5) for _ in xrange(10)]
     return (
-        batch_td(7, training_set, lambda_=0),
-        batch_td(7, training_set, lambda_=0.3),
-        batch_td(7, training_set, lambda_=0.6),
-        batch_td(7, training_set, lambda_=1),
+        batch_td(training_set, lambda_=0),
+        batch_td(training_set, lambda_=0.3),
+        batch_td(training_set, lambda_=0.6),
+        batch_td(training_set, lambda_=1),
     )
 

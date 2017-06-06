@@ -3,16 +3,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def batch_td(training_episodes, w=None, lambda_=0.3, alpha=0.005, epsilon=1e-7):
+def batch_td(training_episodes, w=None, lambda_=0.1, alpha=0.001, epsilon=1e-7):
     num_states = len(training_episodes[0][0])
     if w is None:
-        w = np.zeros(num_states) * 0.5
+        w = np.ones(num_states) * 0.5
     delta_w = w + 1
     start = time.time()
     while np.linalg.norm(delta_w) > epsilon:
+    # for i in xrange(5):
+        delta_w = np.zeros(num_states)
         for episode in training_episodes:
             e = np.zeros(num_states)
-            delta_w = np.zeros(num_states)
             x0 = episode[0]
             P0 = w.dot(x0)
 
@@ -25,6 +26,7 @@ def batch_td(training_episodes, w=None, lambda_=0.3, alpha=0.005, epsilon=1e-7):
                 else:
                     P = w.dot(x)
 
+                # print 'dw', n, alpha * (P - P0) * e, 'e', e, 'P', P, 'P0', P0
                 delta_w += alpha * (P - P0) * e
 
                 if not terminal:
@@ -32,7 +34,7 @@ def batch_td(training_episodes, w=None, lambda_=0.3, alpha=0.005, epsilon=1e-7):
                     x0 = x.copy()
                     P0 = P
 
-            w += delta_w
+        w += delta_w
 
         if time.time() - start > 2:
             print 'delta_w norm:', np.linalg.norm(delta_w), w
@@ -66,13 +68,14 @@ def get_true_w(num_states):
     return true_w
 
 
-def rmse(v1, v2):
+def rmse(v1):
+    v2 = get_true_w(len(v1))
     return np.sqrt(np.mean(np.square(v1 - v2)))
 
 
 def fig3():
-    true_w = get_true_w(7)
-    training_sets = [[walk(7) for _ in xrange(10)] for _ in xrange(100)]
+    true_w = get_true_w(5)
+    training_sets = [[walk(5) for _ in xrange(10)] for _ in xrange(100)]
     lambda_range = np.arange(0.0, 1.1, 0.1)
     errors_by_lambda = []
 
@@ -80,8 +83,8 @@ def fig3():
         print 'lambda:', lambda_
         errors = []
         for training_set in training_sets:
-            w = batch_td(7, training_set, lambda_=lambda_)
-            errors.append(rmse(w[1:6], true_w[1:6]))
+            w = batch_td(training_set, lambda_=lambda_)
+            errors.append(rmse(w))
         errors_by_lambda.append(np.mean(errors))
 
     build_plot(lambda_range, errors_by_lambda, 'lambda', 'RMSE')
@@ -96,12 +99,88 @@ def build_plot(x, y, xlab, ylab):
     plt.show()
 
 
+def simple():
+    training_set = [
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 0, 0, 1, 0]),
+            np.array([0, 0, 0, 0, 1]),
+            1
+        ]
+    ]
+    return batch_td(training_set, alpha=0.1, lambda_=0.1)
+
+def more():
+    training_set = [
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 0, 0, 1, 0]),
+            np.array([0, 0, 0, 0, 1]),
+            1
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 0, 0, 1, 0]),
+            np.array([0, 0, 0, 0, 1]),
+            1
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 0, 0, 1, 0]),
+            np.array([0, 0, 0, 0, 1]),
+            1
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 0, 0, 1, 0]),
+            np.array([0, 0, 0, 0, 1]),
+            1
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 0, 0, 1, 0]),
+            np.array([0, 0, 0, 0, 1]),
+            1
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 1, 0, 0, 0]),
+            np.array([1, 0, 0, 0, 0]),
+            0
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 1, 0, 0, 0]),
+            np.array([1, 0, 0, 0, 0]),
+            0
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 1, 0, 0, 0]),
+            np.array([1, 0, 0, 0, 0]),
+            0
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 1, 0, 0, 0]),
+            np.array([1, 0, 0, 0, 0]),
+            0
+        ],
+        [
+            np.array([0, 0, 1, 0, 0]),
+            np.array([0, 1, 0, 0, 0]),
+            np.array([1, 0, 0, 0, 0]),
+            0
+        ],
+    ]
+    return batch_td(training_set, alpha=0.1, lambda_=0.1)
+
 def test():
     training_set = [walk(5) for _ in xrange(10)]
     return (
-        batch_td(training_set, lambda_=0),
-        batch_td(training_set, lambda_=0.3),
-        batch_td(training_set, lambda_=0.6),
-        batch_td(training_set, lambda_=1),
+        rmse(batch_td(training_set, lambda_=0)),
+        rmse(batch_td(training_set, lambda_=0.3)),
+        rmse(batch_td(training_set, lambda_=0.6)),
+        rmse(batch_td(training_set, lambda_=1)),
     )
 

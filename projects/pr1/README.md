@@ -1,4 +1,4 @@
-PR1 - CS 7642
+Project 1 - RLDM - CS 7642
 =============
 
 GID: mmendiola3
@@ -12,7 +12,7 @@ GID: mmendiola3
 
 # Running code
 
-All experiments can be run with the following.
+All experiments can be run with the following:
 
     python pr1.py
 

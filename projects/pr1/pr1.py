@@ -1,5 +1,8 @@
 '''Reproduces the results of Sutton's 1988 paper.
 GID: mmendiola3
+
+To run:
+    python pr1.py
 '''
 
 
@@ -7,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def batch_td(training_episodes, lambda_=0.3, alpha=0.025, epsilon=1e-7, batch=False):
+def batch_td(training_episodes, lambda_=0.3, alpha=0.005, epsilon=1e-7, batch=False):
     '''Implements the TD lambda algorithm as outlined in Sutton 1988.
     Can be run in batch or sequential mode.'''
 
@@ -124,29 +127,28 @@ def find_best_alpha(lambda_):
 
 def build_multi_plot(x, data, xlab, ylab):
     '''Build a plot with multiple line series.'''
-    plt.ion()
+    f, ax = plt.subplots()
     for label, y in data:
-        plt.plot(x, y, marker='o', label=label)
-    plt.xlabel(xlab)
-    plt.ylabel(ylab)
-    plt.legend()
-    x1,x2,y1,y2 = plt.axis()
-    plt.axis((x1,x2,0.0,1.0))
-
-    plt.show()
+        ax.plot(x, y, marker='o', label=label)
+    ax.legend()
+    ax.set_ylim([0.0, 1.0])
+    ax.set_xlabel(xlab)
+    ax.set_ylabel(ylab)
+    return f
 
 
 def build_plot(x, y, xlab, ylab):
     '''Build a plot with a single line series.'''
-    plt.ion()
-    plt.plot(x, y, marker='o')
-    plt.xlabel(xlab)
-    plt.ylabel(ylab)
-    plt.show()
+    f, ax = plt.subplots()
+    ax.plot(x, y, marker='o')
+    ax.set_xlabel(xlab)
+    ax.set_ylabel(ylab)
+    return f
 
 
 def fig3():
     '''Reproduce the results from Sutton's figure 3.'''
+    print 'Generating fig3.png'
     true_w = get_true_w(5)
     training_sets = [[walk(5) for _ in xrange(10)] for _ in xrange(100)]
     lambda_range = np.arange(0.0, 1.1, 0.1)
@@ -160,16 +162,18 @@ def fig3():
         errors_by_lambda.append(np.mean(errors))
         print 'lambda:', lambda_, 'rmse:', errors_by_lambda[-1]
 
-    build_plot(lambda_range, errors_by_lambda, 'lambda', 'RMSE')
-    return lambda_range, errors_by_lambda
+    fig = build_plot(lambda_range, errors_by_lambda, 'lambda', 'RMSE')
+    fig.savefig('fig3.png')
+    plt.close(fig)
 
 
 def fig4():
     '''Reproduce the results from Sutton's figure 4.'''
+    print 'Generating fig4.png'
     true_w = get_true_w(5)
     training_sets = [[walk(5) for _ in xrange(10)] for _ in xrange(100)]
     lambda_range = (0.0, 0.3, 0.8, 1.0)
-    alpha_range = np.arange(0.0, 0.7, 0.1)
+    alpha_range = np.arange(0.0, 0.65, 0.05)
     errors_by_lambda = []
 
     for lambda_ in lambda_range:
@@ -180,15 +184,17 @@ def fig4():
                 w = batch_td(training_set, lambda_=lambda_, alpha=alpha)
                 errors.append(rmse(w))
             errors_by_alpha.append(np.mean(errors))
-            print 'lambda:', lambda_, 'alpha:', alpha, 'rmse:', errors_by_alpha[-1]
+        print 'lambda:', lambda_, 'errors:', errors_by_alpha
         errors_by_lambda.append(('lambda={}'.format(lambda_), errors_by_alpha))
 
-    build_multi_plot(alpha_range, errors_by_lambda, 'alpha', 'RMSE')
-    return lambda_range, errors_by_lambda
+    fig = build_multi_plot(alpha_range, errors_by_lambda, 'alpha', 'RMSE')
+    fig.savefig('fig4.png')
+    plt.close(fig)
 
 
 def fig5():
     '''Reproduce the results from Sutton's figure 5.'''
+    print 'Generating fig5.png'
     true_w = get_true_w(5)
     training_sets = [[walk(5) for _ in xrange(10)] for _ in xrange(100)]
     lambda_range = np.arange(0.0, 1.1, 0.1)
@@ -205,5 +211,12 @@ def fig5():
         errors_by_lambda.append(np.mean(errors))
         print 'lambda:', lambda_, 'rmse:', errors_by_lambda[-1]
 
-    build_plot(lambda_range, errors_by_lambda, 'lambda', 'RMSE')
-    return lambda_range, errors_by_lambda
+    fig = build_plot(lambda_range, errors_by_lambda, 'lambda', 'RMSE')
+    fig.savefig('fig5.png')
+    plt.close(fig)
+
+
+if __name__ == '__main__':
+    fig3()
+    fig4()
+    fig5()

@@ -1,0 +1,8 @@
+digraph  {
+	0 -> 0	 [color=green,
+		label="p=0.5, r=0"];
+	0 -> 1	 [color=green,
+		label="p=0.5, r=0"];
+	1 -> 1	 [color=green,
+		label="p=1, r=1"];
+}

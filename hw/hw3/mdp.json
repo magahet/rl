@@ -1,0 +1,43 @@
+{
+  "gamma": 0.75,
+  "states": [
+    {
+      "id": 0,
+      "actions": [
+        {
+          "id": 0,
+          "transitions": [
+            {
+              "id": 0,
+              "probability": 0.5,
+              "reward": 0,
+              "to": 0
+            },
+            {
+              "id": 1,
+              "probability": 0.5,
+              "reward": 0,
+              "to": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "actions": [
+        {
+          "id": 0,
+          "transitions": [
+            {
+              "id": 0,
+              "probability": 1,
+              "reward": 1,
+              "to": 1
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

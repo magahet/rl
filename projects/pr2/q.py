@@ -60,12 +60,12 @@ while avg_rewards < 200:
         episode_reward += reward
         state = state_prime
 
+    epsilon = min(1 - reward / 200, 0.8)
+
     rewards_history.append(episode_reward)
     if len(rewards_history) > 100:
         rewards_history.popleft()
     avg_rewards = np.mean(rewards_history)
-
-
 
     if time.time() - start > 5:
         start = time.time()
@@ -74,8 +74,6 @@ while avg_rewards < 200:
     if episode_num % 100 != 0:
         continue
 
-    x = []
-    y = []
     for _ in xrange(100):
         state, action, state_prime, reward, done = (
             history[np.random.choice(len(history))])
@@ -83,15 +81,11 @@ while avg_rewards < 200:
         Q_s_prime = nn.predict(state_prime.reshape(1, 8))[0]
 
         if done:
-            Q_s[action] += reward
+            Q_s[action] = reward
         else:
-            Q_s[action] += (
-                alpha * (reward + gamma * np.max(Q_s_prime) - Q_s[action]))
+            Q_s[action] = reward + gamma * np.max(Q_s_prime)
 
-        x.append(state)
-        y.append(Q_s)
-
-    nn.train_on_batch(np.array(x), np.array(y))
+        nn.fit(state.reshape(1, 8), Q_s.reshape(1, 4), verbose=False)
 
     if save_path:
         nn.save(save_path)

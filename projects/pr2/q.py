@@ -1,16 +1,20 @@
+import os
 import numpy as np
 from collections import deque
 import gym
 import time
-import os
 import sys
-from keras.models import Sequential 
+from keras.models import Sequential
 from keras.layers import Dense
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-alpha = 1.0
+alpha = 1
 gamma = 0.9
-node_count = 128
+epsilon = 1.0
+epsilon_decay = 0.99
+duration = 60
+num_nodes = 48
 
 
 env = gym.make('LunarLander-v2')
@@ -23,25 +27,28 @@ if len(sys.argv) > 1:
 else:
     save_path = None
     nn = Sequential()
-    nn.add(Dense(node_count, input_shape=env.observation_space.shape, activation='relu'))
-    nn.add(Dense(node_count, activation='relu'))
+    nn.add(Dense(num_nodes, input_shape=env.observation_space.shape,
+                 activation='relu'))
+    nn.add(Dense(num_nodes, activation='relu'))
     nn.add(Dense(env.action_space.n, activation='linear'))
-    nn.compile(loss='mean_squared_error', optimizer='adam')
+    nn.compile(loss='mse', optimizer='adam')
 
 history = deque()
-rewards = deque()
+rewards_history = deque()
 episode_num = 0
 avg_rewards = 0
 start = time.time()
+np.random.seed(42)
 
-while True:
+while avg_rewards < 200:
     episode_num += 1
     epsilon = 0.0
     # alpha = 1.0 / episode_num
     state = env.reset()
-    cum_rewards = 0
+    episode_reward = 0
+    done = False
 
-    while True:
+    while not done:
         if np.random.rand() < epsilon:
             action = env.action_space.sample()
         else:
@@ -52,48 +59,35 @@ while True:
         history.append((state, action, state_prime, reward, done))
         if len(history) > 1e6:
             history.popleft()
-        cum_rewards += reward
+        episode_reward += reward
         state = state_prime
 
-        if done:
-            break
+    epsilon = min(1 - reward / 200, 0.8)
 
-    rewards.append(cum_rewards)
-    if len(rewards) > 100:
-        rewards.popleft()
-
-    avg_rewards = np.mean(rewards)
-
-    if avg_rewards >= 200:
-        break
+    rewards_history.append(episode_reward)
+    if len(rewards_history) > 100:
+        rewards_history.popleft()
+    avg_rewards = np.mean(rewards_history)
 
     if time.time() - start > 5:
         start = time.time()
-        print episode_num, avg_rewards
+        print episode_num, avg_rewards, epsilon
 
-    if episode_num % 200 != 0:
+    if episode_num % 100 != 0:
         continue
 
-    x = []
-    y = []
     for _ in xrange(100):
-        state, action, state_prime, reward, done = history[np.random.choice(len(history))]
+        state, action, state_prime, reward, done = (
+            history[np.random.choice(len(history))])
         Q_s = nn.predict(state.reshape(1, 8))[0]
         Q_s_prime = nn.predict(state_prime.reshape(1, 8))[0]
 
         if done:
-            Q_s[action] += reward
+            Q_s[action] = reward
         else:
-            Q_s[action] += alpha * (reward + gamma * np.max(Q_s_prime))
+            Q_s[action] = reward + gamma * np.max(Q_s_prime)
 
-        x.append(state)
-        y.append(Q_s)
-
-    nn.train_on_batch(np.array(x), np.array(y))
-
+        nn.fit(state.reshape(1, 8), Q_s.reshape(1, 4), verbose=False)
 
     if save_path:
         nn.save(save_path)
-
-if not save_path:
-    nn.save_path('/tmp/trained-model')

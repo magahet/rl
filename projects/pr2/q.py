@@ -21,17 +21,17 @@ per_alpha = 0.9
 per_epsilon = 0.01
 
 hidden_nodes = [400, 200]
-optimizer = Adam(lr=0.3)
+optimizer = Adam(lr=0.01)
 activation = 'relu'
 loss = lambda x, y: K.mean(K.sqrt(1 + K.square(x - y)), axis=-1)
 
 gamma = 0.99
-epsilon_end = 500
+epsilon_end = 100
 epsilon_min = 0.0
 training_freq = 1
 target_update_steps = 1000
-batch_size = 64
-history_size = 5e5
+batch_size = 128
+history_size = 1e5
 history_min = 1e3
 
 epsilon_delta = (1 - epsilon_min) / epsilon_end

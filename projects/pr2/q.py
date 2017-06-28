@@ -15,7 +15,7 @@ seed = 16
 
 duel = True
 double = True
-priority_replay = True
+priority_replay = False
 
 per_alpha = 0.6
 per_epsilon = 0.01

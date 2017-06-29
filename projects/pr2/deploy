@@ -1,0 +1,22 @@
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt install -y python-pip
+sudo pip install -y --upgrade tensorflow
+sudo pip install -y --upgrade gym
+sudo apt-get install swig
+sudo apt-get install python-box2d
+
+git clone https://github.com/pybox2d/pybox2d -b 2.3.1
+cd pybox2d/
+python setup.py build
+sudo python setup.py install
+
+
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install -y python-pip python-numpy python-dev cmake zlib1g-dev libjpeg-dev xvfb libav-tools xorg-dev python-opengl git
+sudo pip install --upgrade pip
+sudo pip install --upgrade tensorflow keras
+git clone https://github.com/openai/gym
+cd gym
+sudo pip install -e .[all] --upgrade

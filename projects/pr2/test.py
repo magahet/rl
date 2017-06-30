@@ -9,7 +9,7 @@ import random
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-model_path = 'model.h5'
+model_path = 'final-model.h5'
 render = True
 
 seed = 42
@@ -66,7 +66,7 @@ avg_rewards = 0
 episode_num = 0
 total_steps = 0
 
-while avg_rewards < 200:
+while avg_rewards < 200 or episode_num < 100:
     episode_num += 1
     state = normalize(env.reset())
     episode_reward = 0

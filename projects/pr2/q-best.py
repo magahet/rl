@@ -20,8 +20,8 @@ from keras import backend as K
 from keras.layers.advanced_activations import LeakyReLU
 
 
-def hubert_loss(x, y):
-    return K.mean(K.sqrt(1 + K.square(x - y)), axis=-1)
+def huber_loss(x, y, delta=1):
+    return K.mean((delta ** 2) * K.sqrt(1 + K.square((x - y) / delta)) - 1)
 
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -30,7 +30,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 lr = 0.001
 hidden_nodes = [400]
 optimizer = Adam(lr=lr)
-loss = hubert_loss
+loss = huber_loss
 activations = [LeakyReLU() for _ in xrange(len(hidden_nodes))]
 gamma = 0.99
 epsilon_delta = 0.001

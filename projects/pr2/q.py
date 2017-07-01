@@ -101,6 +101,7 @@ while avg_rewards < 200:
     episode_loss = 0
 
     while not done:
+        env.render()
         if np.random.rand() < epsilon:
             action = np.random.choice(env.action_space.n)
         else:

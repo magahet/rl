@@ -19314,3 +19314,365 @@ Making new env: LunarLander-v2
 (101, 242, 187)
 (102, 91, 186)
 (103, 200, 187)
+Making new env: LunarLander-v2
+episode: 1, reward: -169, avg_reward: -169, epsilon: 1.00
+episode: 2, reward: -129, avg_reward: -149, epsilon: 1.00
+episode: 3, reward: -322, avg_reward: -207, epsilon: 1.00
+episode: 4, reward: -136, avg_reward: -189, epsilon: 1.00
+episode: 5, reward: -156, avg_reward: -183, epsilon: 0.99
+episode: 6, reward: -353, avg_reward: -211, epsilon: 0.99
+episode: 7, reward: -134, avg_reward: -200, epsilon: 0.99
+episode: 8, reward: -411, avg_reward: -226, epsilon: 0.99
+episode: 9, reward: -360, avg_reward: -241, epsilon: 0.99
+episode: 10, reward: -274, avg_reward: -244, epsilon: 0.99
+episode: 11, reward: -244, avg_reward: -244, epsilon: 0.99
+episode: 12, reward: -323, avg_reward: -251, epsilon: 0.99
+episode: 13, reward: -193, avg_reward: -246, epsilon: 0.99
+episode: 14, reward: -287, avg_reward: -249, epsilon: 0.99
+episode: 15, reward: -210, avg_reward: -247, epsilon: 0.98
+episode: 16, reward: -137, avg_reward: -240, epsilon: 0.98
+episode: 17, reward: -178, avg_reward: -236, epsilon: 0.98
+episode: 18, reward: -281, avg_reward: -239, epsilon: 0.98
+episode: 19, reward: -271, avg_reward: -240, epsilon: 0.98
+episode: 20, reward: -126, avg_reward: -235, epsilon: 0.98
+episode: 21, reward: -246, avg_reward: -235, epsilon: 0.98
+episode: 22, reward: -157, avg_reward: -232, epsilon: 0.98
+episode: 23, reward: -144, avg_reward: -228, epsilon: 0.98
+episode: 24, reward: -135, avg_reward: -224, epsilon: 0.98
+episode: 25, reward: -229, avg_reward: -224, epsilon: 0.97
+episode: 26, reward: -226, avg_reward: -224, epsilon: 0.97
+episode: 27, reward: -445, avg_reward: -232, epsilon: 0.97
+episode: 28, reward: -198, avg_reward: -231, epsilon: 0.97
+episode: 29, reward: -234, avg_reward: -231, epsilon: 0.97
+episode: 30, reward: -96, avg_reward: -227, epsilon: 0.97
+episode: 31, reward: -330, avg_reward: -230, epsilon: 0.97
+episode: 32, reward: -169, avg_reward: -228, epsilon: 0.97
+episode: 33, reward: -142, avg_reward: -226, epsilon: 0.97
+episode: 34, reward: -270, avg_reward: -227, epsilon: 0.97
+episode: 35, reward: -226, avg_reward: -227, epsilon: 0.96
+episode: 36, reward: -177, avg_reward: -226, epsilon: 0.96
+episode: 37, reward: -261, avg_reward: -226, epsilon: 0.96
+episode: 38, reward: -187, avg_reward: -225, epsilon: 0.96
+episode: 39, reward: -412, avg_reward: -230, epsilon: 0.96
+episode: 40, reward: -212, avg_reward: -230, epsilon: 0.96
+episode: 41, reward: -157, avg_reward: -228, epsilon: 0.96
+episode: 42, reward: -172, avg_reward: -227, epsilon: 0.96
+episode: 43, reward: -179, avg_reward: -226, epsilon: 0.96
+episode: 44, reward: -354, avg_reward: -228, epsilon: 0.96
+episode: 45, reward: -270, avg_reward: -229, epsilon: 0.95
+episode: 46, reward: -201, avg_reward: -229, epsilon: 0.95
+episode: 47, reward: -154, avg_reward: -227, epsilon: 0.95
+episode: 48, reward: -178, avg_reward: -226, epsilon: 0.95
+episode: 49, reward: -148, avg_reward: -225, epsilon: 0.95
+episode: 50, reward: -513, avg_reward: -230, epsilon: 0.95
+episode: 51, reward: -323, avg_reward: -232, epsilon: 0.95
+episode: 52, reward: -49, avg_reward: -229, epsilon: 0.95
+episode: 53, reward: -121, avg_reward: -227, epsilon: 0.95
+episode: 54, reward: -242, avg_reward: -227, epsilon: 0.95
+episode: 55, reward: -112, avg_reward: -225, epsilon: 0.94
+episode: 56, reward: -154, avg_reward: -224, epsilon: 0.94
+episode: 57, reward: -148, avg_reward: -222, epsilon: 0.94
+episode: 58, reward: -244, avg_reward: -223, epsilon: 0.94
+episode: 59, reward: -206, avg_reward: -222, epsilon: 0.94
+episode: 60, reward: -131, avg_reward: -221, epsilon: 0.94
+episode: 61, reward: -209, avg_reward: -221, epsilon: 0.94
+episode: 62, reward: -197, avg_reward: -220, epsilon: 0.94
+episode: 63, reward: -361, avg_reward: -222, epsilon: 0.94
+episode: 64, reward: -544, avg_reward: -227, epsilon: 0.94
+episode: 65, reward: -170, avg_reward: -227, epsilon: 0.93
+episode: 66, reward: -373, avg_reward: -229, epsilon: 0.93
+episode: 67, reward: -182, avg_reward: -228, epsilon: 0.93
+episode: 68, reward: -396, avg_reward: -231, epsilon: 0.93
+episode: 69, reward: -174, avg_reward: -230, epsilon: 0.93
+episode: 70, reward: -175, avg_reward: -229, epsilon: 0.93
+episode: 71, reward: -256, avg_reward: -229, epsilon: 0.93
+episode: 72, reward: -282, avg_reward: -230, epsilon: 0.93
+episode: 73, reward: -148, avg_reward: -229, epsilon: 0.93
+episode: 74, reward: -71, avg_reward: -227, epsilon: 0.93
+episode: 75, reward: -127, avg_reward: -225, epsilon: 0.92
+episode: 76, reward: -138, avg_reward: -224, epsilon: 0.92
+episode: 77, reward: -159, avg_reward: -223, epsilon: 0.92
+episode: 78, reward: -20, avg_reward: -221, epsilon: 0.92
+episode: 79, reward: -33, avg_reward: -219, epsilon: 0.92
+episode: 80, reward: -392, avg_reward: -221, epsilon: 0.92
+episode: 81, reward: -177, avg_reward: -220, epsilon: 0.92
+episode: 82, reward: -279, avg_reward: -221, epsilon: 0.92
+episode: 83, reward: -261, avg_reward: -221, epsilon: 0.92
+episode: 84, reward: -28, avg_reward: -219, epsilon: 0.92
+episode: 85, reward: -218, avg_reward: -219, epsilon: 0.91
+episode: 86, reward: -160, avg_reward: -218, epsilon: 0.91
+episode: 87, reward: -287, avg_reward: -219, epsilon: 0.91
+episode: 88, reward: -206, avg_reward: -219, epsilon: 0.91
+episode: 89, reward: -194, avg_reward: -219, epsilon: 0.91
+episode: 90, reward: -131, avg_reward: -218, epsilon: 0.91
+episode: 91, reward: -122, avg_reward: -217, epsilon: 0.91
+episode: 92, reward: -99, avg_reward: -215, epsilon: 0.91
+episode: 93, reward: -156, avg_reward: -215, epsilon: 0.91
+episode: 94, reward: -193, avg_reward: -215, epsilon: 0.91
+episode: 95, reward: -252, avg_reward: -215, epsilon: 0.90
+episode: 96, reward: -169, avg_reward: -214, epsilon: 0.90
+episode: 97, reward: -313, avg_reward: -215, epsilon: 0.90
+episode: 98, reward: -108, avg_reward: -214, epsilon: 0.90
+episode: 99, reward: -172, avg_reward: -214, epsilon: 0.90
+episode: 100, reward: -347, avg_reward: -215, epsilon: 0.90
+episode: 101, reward: -126, avg_reward: -215, epsilon: 0.90
+episode: 102, reward: -195, avg_reward: -215, epsilon: 0.90
+episode: 103, reward: -251, avg_reward: -215, epsilon: 0.90
+episode: 104, reward: -188, avg_reward: -215, epsilon: 0.90
+episode: 105, reward: -192, avg_reward: -216, epsilon: 0.89
+episode: 106, reward: -331, avg_reward: -215, epsilon: 0.89
+episode: 107, reward: -83, avg_reward: -215, epsilon: 0.89
+episode: 108, reward: -226, avg_reward: -213, epsilon: 0.89
+episode: 109, reward: -275, avg_reward: -212, epsilon: 0.89
+episode: 110, reward: -153, avg_reward: -211, epsilon: 0.89
+episode: 111, reward: -169, avg_reward: -210, epsilon: 0.89
+episode: 112, reward: -511, avg_reward: -212, epsilon: 0.89
+episode: 113, reward: -189, avg_reward: -212, epsilon: 0.89
+episode: 114, reward: -120, avg_reward: -210, epsilon: 0.89
+episode: 115, reward: -94, avg_reward: -209, epsilon: 0.88
+episode: 116, reward: -292, avg_reward: -211, epsilon: 0.88
+episode: 117, reward: -269, avg_reward: -212, epsilon: 0.88
+episode: 118, reward: -146, avg_reward: -210, epsilon: 0.88
+episode: 119, reward: -128, avg_reward: -209, epsilon: 0.88
+episode: 120, reward: -380, avg_reward: -211, epsilon: 0.88
+episode: 121, reward: -133, avg_reward: -210, epsilon: 0.88
+episode: 122, reward: -210, avg_reward: -211, epsilon: 0.88
+episode: 123, reward: -8, avg_reward: -210, epsilon: 0.88
+episode: 124, reward: -145, avg_reward: -210, epsilon: 0.88
+episode: 125, reward: -141, avg_reward: -209, epsilon: 0.87
+episode: 126, reward: -84, avg_reward: -207, epsilon: 0.87
+episode: 127, reward: -155, avg_reward: -204, epsilon: 0.87
+episode: 128, reward: -182, avg_reward: -204, epsilon: 0.87
+episode: 129, reward: -237, avg_reward: -204, epsilon: 0.87
+episode: 130, reward: -323, avg_reward: -207, epsilon: 0.87
+episode: 131, reward: -218, avg_reward: -205, epsilon: 0.87
+episode: 132, reward: -417, avg_reward: -208, epsilon: 0.87
+episode: 133, reward: -168, avg_reward: -208, epsilon: 0.87
+episode: 134, reward: -207, avg_reward: -208, epsilon: 0.87
+episode: 135, reward: -181, avg_reward: -207, epsilon: 0.86
+episode: 136, reward: -195, avg_reward: -207, epsilon: 0.86
+episode: 137, reward: -218, avg_reward: -207, epsilon: 0.86
+episode: 138, reward: -191, avg_reward: -207, epsilon: 0.86
+episode: 139, reward: -64, avg_reward: -203, epsilon: 0.86
+episode: 140, reward: -96, avg_reward: -202, epsilon: 0.86
+episode: 141, reward: -154, avg_reward: -202, epsilon: 0.86
+episode: 142, reward: -143, avg_reward: -202, epsilon: 0.86
+episode: 143, reward: -115, avg_reward: -201, epsilon: 0.86
+episode: 144, reward: -186, avg_reward: -200, epsilon: 0.86
+episode: 145, reward: -85, avg_reward: -198, epsilon: 0.85
+episode: 146, reward: -138, avg_reward: -197, epsilon: 0.85
+episode: 147, reward: -137, avg_reward: -197, epsilon: 0.85
+episode: 148, reward: -196, avg_reward: -197, epsilon: 0.85
+episode: 149, reward: -201, avg_reward: -198, epsilon: 0.85
+episode: 150, reward: -77, avg_reward: -193, epsilon: 0.85
+episode: 151, reward: -232, avg_reward: -192, epsilon: 0.85
+episode: 152, reward: -131, avg_reward: -193, epsilon: 0.85
+episode: 153, reward: -116, avg_reward: -193, epsilon: 0.85
+episode: 154, reward: -153, avg_reward: -192, epsilon: 0.85
+episode: 155, reward: -98, avg_reward: -192, epsilon: 0.84
+episode: 156, reward: -48, avg_reward: -191, epsilon: 0.84
+episode: 157, reward: -108, avg_reward: -191, epsilon: 0.84
+episode: 158, reward: -163, avg_reward: -190, epsilon: 0.84
+episode: 159, reward: -336, avg_reward: -191, epsilon: 0.84
+episode: 160, reward: -206, avg_reward: -192, epsilon: 0.84
+episode: 161, reward: -91, avg_reward: -191, epsilon: 0.84
+episode: 162, reward: -171, avg_reward: -191, epsilon: 0.84
+episode: 163, reward: -341, avg_reward: -190, epsilon: 0.84
+episode: 164, reward: -329, avg_reward: -188, epsilon: 0.84
+Making new env: LunarLander-v2
+(1, 234, 234)
+(2, 232, 233)
+(3, 91, 186)
+(4, 232, 197)
+(5, 218, 201)
+(6, 248, 209)
+(7, 218, 210)
+(8, 223, 212)
+(9, 226, 214)
+(10, 224, 215)
+(11, 105, 205)
+(12, 234, 207)
+(13, 128, 201)
+(14, 100, 194)
+(15, 212, 195)
+(16, 215, 196)
+(17, 222, 198)
+(18, 237, 200)
+(19, 182, 199)
+(20, 220, 200)
+(21, 184, 199)
+(22, 89, 194)
+(23, 229, 196)
+(24, 232, 197)
+(25, 226, 198)
+(26, 225, 199)
+(27, 249, 201)
+(28, 225, 202)
+(29, 136, 200)
+(30, 197, 200)
+(31, 207, 200)
+(32, 190, 200)
+(33, 209, 200)
+(34, 219, 200)
+(35, 189, 200)
+(36, 92, 197)
+(37, 243, 198)
+(38, 201, 198)
+(39, 232, 199)
+(40, 225, 200)
+(41, 231, 201)
+(42, 193, 201)
+(43, 214, 201)
+(44, 230, 201)
+(45, -150, 194)
+(46, 104, 192)
+(47, 241, 193)
+(48, 119, 191)
+(49, 236, 192)
+(50, 226, 193)
+(51, 223, 193)
+(52, 219, 194)
+(53, 233, 195)
+(54, 109, 193)
+(55, 203, 193)
+(56, 202, 193)
+(57, 202, 194)
+(58, 122, 192)
+(59, 204, 193)
+(60, 202, 193)
+(61, 220, 193)
+(62, 103, 192)
+(63, 226, 192)
+(64, 110, 191)
+(65, 239, 192)
+(66, 195, 192)
+(67, 212, 192)
+(68, 225, 192)
+(69, 75, 191)
+(70, 54, 189)
+(71, 96, 188)
+(72, 96, 186)
+(73, 211, 187)
+(74, 186, 187)
+(75, 204, 187)
+(76, 201, 187)
+(77, 232, 188)
+(78, 223, 188)
+(79, 208, 188)
+(80, 255, 189)
+(81, 210, 189)
+(82, 203, 190)
+(83, 203, 190)
+(84, 232, 190)
+(85, 205, 190)
+(86, 197, 190)
+(87, 188, 190)
+(88, 227, 191)
+(89, 205, 191)
+(90, -119, 188)
+(91, 199, 188)
+(92, 98, 187)
+(93, 193, 187)
+(94, 98, 186)
+(95, 234, 186)
+(96, 97, 185)
+(97, 245, 186)
+(98, 252, 187)
+(99, 192, 187)
+(100, 208, 187)
+(101, 242, 187)
+(102, 91, 186)
+(103, 200, 187)
+(104, 209, 187)
+(105, 201, 186)
+(106, 206, 186)
+(107, 246, 186)
+(108, 244, 186)
+(109, 219, 186)
+(110, 235, 186)
+(111, 189, 187)
+(112, 201, 187)
+(113, 193, 188)
+(114, 211, 189)
+(115, 209, 189)
+(116, 190, 188)
+(117, 240, 189)
+(118, -116, 185)
+(119, 212, 185)
+(120, 222, 185)
+(121, 194, 185)
+(122, 215, 187)
+(123, 238, 187)
+(124, 199, 187)
+(125, 203, 186)
+(126, 201, 186)
+(127, 211, 186)
+(128, 100, 184)
+(129, 193, 185)
+(130, 98, 184)
+(131, 241, 184)
+(132, 246, 185)
+(133, 230, 185)
+(134, 238, 185)
+(135, 235, 186)
+(136, 226, 187)
+(137, 191, 187)
+(138, 225, 187)
+(139, 217, 187)
+(140, 80, 185)
+(141, 221, 185)
+(142, 243, 186)
+(143, 214, 186)
+(144, 251, 186)
+(145, 217, 190)
+(146, 206, 191)
+(147, 204, 190)
+(148, 198, 191)
+(149, 142, 190)
+(150, 206, 190)
+(151, 208, 190)
+(152, 206, 190)
+(153, 200, 189)
+(154, 107, 189)
+(155, 240, 190)
+(156, 230, 190)
+(157, 220, 190)
+(158, 229, 191)
+(159, 233, 191)
+(160, 229, 192)
+(161, 234, 192)
+(162, 249, 193)
+(163, 204, 193)
+(164, 225, 194)
+(165, 207, 194)
+(166, 241, 194)
+(167, 228, 194)
+(168, 196, 194)
+(169, 211, 196)
+(170, 194, 197)
+(171, 207, 198)
+(172, 130, 198)
+(173, 215, 198)
+(174, 204, 199)
+(175, 249, 199)
+(176, 211, 199)
+(177, 179, 199)
+(178, 253, 199)
+(179, 209, 199)
+(180, 252, 199)
+(181, 85, 198)
+(182, 228, 198)
+(183, 253, 198)
+(184, 205, 198)
+(185, -133, 195)
+(186, 211, 195)
+(187, 122, 194)
+(188, 132, 193)
+(189, 220, 193)
+(190, 218, 197)
+(191, 130, 196)
+(192, 222, 197)
+(193, 199, 197)
+(194, 232, 199)
+(195, 225, 199)
+(196, 212, 200)

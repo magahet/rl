@@ -32,7 +32,8 @@ class World:
     """ Soccer environment simulator class. """
 
     def __init__(self):
-        """ Method that initializes the World class with class variables to be used in the class methods. """
+        """ Method that initializes the World class with class variables to be
+        used in the class methods. """
 
         self.cols = None
         self.rows = None
@@ -136,9 +137,12 @@ class World:
 
         Parameters
         ----------
-            new_pos (Player): Player class instance that represents the new active player's position.
-            moving_player (Player): Player class instance of the player that is moving.
-            other_players (list): List of player class instances representing the other players in the game.
+            new_pos (Player): Player class instance that represents the new
+                active player's position.
+            moving_player (Player): Player class instance of the player that is
+                moving.
+            other_players (list): List of player class instances representing
+                the other players in the game.
 
         Returns
         -------
@@ -154,7 +158,8 @@ class World:
             if new_pos.x == other_p.x and new_pos.y == other_p.y:
 
                 if self.commentator:
-                    print '{} collided with {}'.format(moving_player.p_id, other_p.p_id)
+                    print '{} collided with {}'.format(moving_player.p_id,
+                                                       other_p.p_id)
 
                 collision = True
 
@@ -163,7 +168,8 @@ class World:
                     moving_player.update_ball_pos(False)
 
                     if self.commentator:
-                        print "{} steals from {}".format(other_p.p_id, moving_player.p_id)
+                        print "{} steals from {}".format(other_p.p_id,
+                                                         moving_player.p_id)
 
         return collision
 
@@ -187,7 +193,8 @@ class World:
         other_players = set(player_order) - set(moving_player.p_id)
         r = {k: 0 for k in player_order}
 
-        if moving_player.x == self.goals[moving_player.p_id] and moving_player.has_ball:
+        if (moving_player.x == self.goals[moving_player.p_id] and
+                moving_player.has_ball):
 
             if self.commentator:
                 print "{} scored a goal!!".format(moving_player.p_id)
@@ -199,8 +206,9 @@ class World:
                 r[op_id] = -self.goal_r[moving_player.p_id]
 
         else:
-            other_goal = {op_id: moving_player.x == self.goals[op_id] and moving_player.has_ball
-                          for op_id in player_order}
+            other_goal = {
+                op_id: moving_player.x == self.goals[op_id]
+                and moving_player.has_ball for op_id in player_order}
 
             if sum(other_goal.values()) > 0:
 
@@ -245,7 +253,10 @@ class World:
         for p_id in player_order:
             moving_player = self.players[p_id]
             other_players = set(player_order) - set(p_id)
-            new_pos.update_state(moving_player.x, moving_player.y, moving_player.has_ball)
+            new_pos.update_state(
+                moving_player.x,
+                moving_player.y,
+                moving_player.has_ball)
             action = self.actions[a[p_id]]
 
             if action == 'N' and new_pos.y != 0:
@@ -260,17 +271,21 @@ class World:
             elif action == 'S' and new_pos.y != self.rows - 1:
                 new_pos.update_y(new_pos.y + 1)
 
-            collision = self.check_collision(new_pos, moving_player, other_players)
+            collision = self.check_collision(
+                new_pos, moving_player, other_players)
 
             if not collision:
-                moving_player.update_state(new_pos.x, new_pos.y, new_pos.has_ball)
+                moving_player.update_state(
+                    new_pos.x, new_pos.y, new_pos.has_ball)
 
             r, goal = self.check_goal(moving_player, player_order)
 
             if goal:
                 break
 
-            r, goal = self.check_goal(self.players[list(other_players)[0]], player_order)
+            r, goal = self.check_goal(
+                self.players[list(other_players)[0]],
+                player_order)
 
             if goal:
                 break
@@ -278,8 +293,34 @@ class World:
         if self.commentator:
             print 'Player Order: {}'.format(player_order)
             print 'Actions: {}'.format(a)
-            print 'A location: ({}, {})'.format(self.players['A'].x, self.players['A'].y)
-            print 'B location: ({}, {})'.format(self.players['B'].x, self.players['B'].y)
+            print 'A location: ({}, {})'.format(self.players['A'].x,
+                                                self.players['A'].y)
+            print 'B location: ({}, {})'.format(self.players['B'].x,
+                                                self.players['B'].y)
             print ""
 
         return self.map_player_state(), r, goal
+
+
+class Game(object):
+    def __init__(self):
+        self.reset()
+
+    def reset(self, debug=False):
+        self.player_a = Player(x=2, y=0, has_ball=False, p_id='A')
+        self.player_b = Player(x=1, y=0, has_ball=True, p_id='B')
+        self.world = World()
+        self.world.set_world_size(x=4, y=2)
+        self.world.place_player(self.player_a, player_id='A')
+        self.world.place_player(self.player_b, player_id='B')
+        self.world.set_goals(100, 0, 'A')
+        self.world.set_goals(100, 3, 'B')
+        if debug:
+            self.world.set_commentator_on()
+        return self.world.map_player_state(), 0, False
+
+    def step(self, actions):
+        return self.world.move({'A': actions[0], 'B': actions[1]})
+
+    def plot_grid(self):
+        return self.world.plot_grid()

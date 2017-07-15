@@ -2,7 +2,9 @@
 
 from soccer import Game
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
+import itertools
+import time
 
 
 def create_state_comb(p_a_states, p_b_states):
@@ -67,16 +69,16 @@ class QAgent(object):
 
         old_Q = self.Q[state][action]
 
-        self.Q[state][action] += (
-            self.alpha * (reward + self.gamma * np.max(self.Q[next_state]) -
-                          self.Q[state][action])
+        self.Q[state][action] = (
+            (1 - self.alpha) * self.Q[state][action] +
+            self.alpha * (reward + self.gamma * np.max(self.Q[next_state]))
         )
         return abs(self.Q[state][action] - old_Q)
 
     def get_best_action(self, state):
         greedy = (
             state in self.Q and
-            np.random.uniform > self.epsilon and
+            np.random.uniform() > self.epsilon and
             np.sum(self.Q[state]) > 0
         )
         if greedy:
@@ -85,23 +87,96 @@ class QAgent(object):
             return np.random.randint(self.num_actions)
 
 
+class CEQAgent(object):
+    def __init__(self, num_actions=5, num_players=2, policy=None):
+        self.Q = [{}, {}]
+        self.alpha = 0.001
+        self.gamma = 0.9
+        self.epsilon = 0.001
+        self.num_actions = num_actions
+        self.num_players = num_players
+        self.policy_func = {
+            None: self._utilitarian,
+            'u': self._utilitarian,
+            'e': self._egalitarian,
+            'r': self._republican,
+            'l': self._libertarian,
+        }.get(policy)
+        self.action_permutations = [
+            i for i in itertools.permutations(range(num_actions), num_players)
+        ]
+
+    def _utilitarian(self, player, state):
+        index = np.argmax([
+            np.sum([Q[state][a[0]][a[1]] for Q in self.Q]) for
+            a in self.action_permutations
+        ])
+        a1, a2 = self.action_permutations[index]
+        return self.Q[player][state][a1][a2]
+
+    def _egalitarian(self, state):
+        pass
+
+    def _republican(self, state):
+        pass
+
+    def _libertarian(self, state):
+        pass
+
+    def update(self, state, actions, next_state, rewards):
+        a1, a2 = actions
+        for player in xrange(self.num_players):
+            if state not in self.Q[player]:
+                self.Q[player][state] = np.zeros((self.num_actions,
+                                                  self.num_actions))
+            if next_state not in self.Q:
+                self.Q[player][next_state] = np.zeros((self.num_actions,
+                                                       self.num_actions))
+        old_Q = self.Q[0][state][a1][a2]
+
+        for player in xrange(self.num_players):
+            V = self.policy_func(player, next_state)
+
+            self.Q[player][state][a1][a2] += (
+                (1 - self.alpha) * self.Q[player][state][a1][a2] +
+                self.alpha * (1 - self.gamma) * rewards[player] +
+                self.gamma * V
+            )
+
+        return abs(self.Q[0][state][a1][a2] - old_Q)
+
+    def get_best_actions(self, state):
+        actions = []
+        for player in xrange(self.num_players):
+            greedy = (
+                state in self.Q[player] and
+                np.random.uniform() > self.epsilon and
+                np.sum(self.Q[player][state]) > 0
+            )
+            if greedy:
+                actions.append(
+                    np.argmax(self.Q[player][state]) % self.num_actions)
+            else:
+                actions.append(np.random.randint(self.num_actions))
+        return tuple(actions)
+
+
 def plot(data):
-    plt.plot(data)
+    plt.plot(data, linewidth=1, color='black')
+    plt.pause(0.05)
 
 
-def main():
+def run_q():
     trials = 10e5
     env = Game()
     Qa = QAgent()
     Qb = QAgent()
     error_by_trial = []
+    last = time.time()
 
     for episode in xrange(int(trials)):
         error = 0.0
         state, rewards, done = env.reset()
-
-        if episode % (trials / 100) == 0:
-            print 100 * (episode / trials)
 
         while not done:
             action_a = Qa.get_best_action(state)
@@ -112,6 +187,40 @@ def main():
             state = next_state
             # env.plot_grid()
 
+        if time.time() - last > 5:
+            last = time.time()
+            print 100 * (episode / trials), error
+            # plot(error_by_trial)
+
+        error_by_trial.append(error)
+
+    return error_by_trial
+
+
+def run_ceq():
+    trials = 10e5
+    env = Game()
+    Q = CEQAgent()
+    error_by_trial = []
+    last = time.time()
+
+    for episode in xrange(int(trials)):
+        error = 0.0
+        state, rewards, done = env.reset()
+
+        while not done:
+            actions = Q.get_best_actions(state)
+            next_state, rewards, done = env.step(actions)
+            rewards = (rewards['A'], rewards['B'])
+            error += Q.update(state, actions, next_state, rewards)
+            state = next_state
+            # env.plot_grid()
+
+        if time.time() - last > 5:
+            last = time.time()
+            print 100 * (episode / trials), error
+            # plot(error_by_trial)
+
         error_by_trial.append(error)
 
     return error_by_trial
@@ -120,4 +229,6 @@ def main():
 
 
 if __name__ == '__main__':
-    error = main()
+    plt.ion()
+    error = run_ceq()
+    # error = run_q()

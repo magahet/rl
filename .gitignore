@@ -2,3 +2,4 @@ rl-audio/
 *.pyc
 *.swp
 .ropeproject/
+*.p

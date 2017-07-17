@@ -1,67 +1,25 @@
 #!/usr/bin/env python
 
 from soccer import Game
+from collections import defaultdict
+import cPickle as pickle
 import numpy as np
 import matplotlib.pyplot as plt
 import itertools
 import time
 
 
-def create_state_comb(p_a_states, p_b_states):
-    """ Creates a dictionary that represents the state space possible
-    combinations.
-
-    Args:
-        p_a_states (list): List with the numerical state labels for player A
-        p_b_states (list): List with the numerical state labels for player B
-
-    Returns:
-        dict: Dictionary with the state space representation. Each element is
-        labeled using the format [XYZ] where:
-                - X: shows who has the ball, either A or B.
-                - Y: state where player A is.
-                - Z: state where player B is.
-
-            The key values hold a numeric value using the counter id_q.
-
-    """
-
-    states = {}
-    ball_pos = ['A', 'B']
-    id_q = 0
-
-    for b in ball_pos:
-
-        for p_a in p_a_states:
-
-            for p_b in p_b_states:
-
-                if p_a != p_b:
-                    states[b + str(p_a) + str(p_b)] = id_q
-                    id_q += 1
-
-    return states
-
-
-def print_status(goal, new_state, rewards, total_states):
-    print ""
-    print "Players state label: {}".format(new_state)
-    print "Players state in the numerical table: {}".format(
-        total_states[new_state])
-    print "Rewards for each player after move: {}".format(rewards)
-    print "Goal status: {}".format(goal)
-    print "-" * 20 + "\n"
-
-
 class QAgent(object):
     def __init__(self, num_actions=5):
         self.Q = {}
-        self.alpha = 0.001
+        self.state_count = defaultdict(int)
         self.gamma = 0.99
         self.epsilon = 0.01
         self.num_actions = num_actions
 
     def update(self, state, action, next_state, reward):
+        self.state_count[(state, action)] += 1
+
         if state not in self.Q:
             self.Q[state] = np.zeros(self.num_actions)
         if next_state not in self.Q:
@@ -69,9 +27,10 @@ class QAgent(object):
 
         old_Q = self.Q[state][action]
 
+        alpha = 1.0 / self.state_count[(state, action)]
         self.Q[state][action] = (
-            (1 - self.alpha) * self.Q[state][action] +
-            self.alpha * (reward + self.gamma * np.max(self.Q[next_state]))
+            (1 - alpha) * self.Q[state][action] +
+            alpha * (reward + self.gamma * np.max(self.Q[next_state]))
         )
         return abs(self.Q[state][action] - old_Q)
 
@@ -88,7 +47,7 @@ class QAgent(object):
 
 
 class CEQAgent(object):
-    def __init__(self, num_actions=5, num_players=2, policy=None):
+    def __init__(self, num_actions=5, num_players=2, policy='u'):
         self.Q = [{}, {}]
         self.alpha = 0.001
         self.gamma = 0.9
@@ -96,7 +55,6 @@ class CEQAgent(object):
         self.num_actions = num_actions
         self.num_players = num_players
         self.policy_func = {
-            None: self._utilitarian,
             'u': self._utilitarian,
             'e': self._egalitarian,
             'r': self._republican,
@@ -106,13 +64,9 @@ class CEQAgent(object):
             i for i in itertools.permutations(range(num_actions), num_players)
         ]
 
-    def _utilitarian(self, player, state):
-        index = np.argmax([
-            np.sum([Q[state][a[0]][a[1]] for Q in self.Q]) for
-            a in self.action_permutations
-        ])
-        a1, a2 = self.action_permutations[index]
-        return self.Q[player][state][a1][a2]
+    def _utilitarian(self, Q):
+        '''Maximize sum of all rewards.'''
+        return np.concatenate(Q).flatten() * -1
 
     def _egalitarian(self, state):
         pass
@@ -122,6 +76,26 @@ class CEQAgent(object):
 
     def _libertarian(self, state):
         pass
+
+    def ce_value(self, player, state):
+        Q = [self.Q[i][state] for i in self.num_players]
+        # Get objective function based on policy
+        c = self.policy_func(Q)
+
+        # Make the sum of probabilities == 1
+        A_eq = np.ones((1, len(self.action_permutations)))
+        b_eq = np.array([1.0])
+
+        # Build upper bound constraints
+        A_ub = []
+
+        # Make each probability >= 0
+        A_ub.extend(list(np.eye(self.num_actions) * -1))
+
+        # Build rationality constraints
+
+
+
 
     def update(self, state, actions, next_state, rewards):
         a1, a2 = actions
@@ -135,7 +109,7 @@ class CEQAgent(object):
         old_Q = self.Q[0][state][a1][a2]
 
         for player in xrange(self.num_players):
-            V = self.policy_func(player, next_state)
+            V = self.ce_value(player, next_state)
 
             self.Q[player][state][a1][a2] += (
                 (1 - self.alpha) * self.Q[player][state][a1][a2] +
@@ -166,6 +140,16 @@ def plot(data):
     plt.pause(0.05)
 
 
+def save(data, path):
+    with open(path, 'wb') as file_:
+        pickle.dump(data, file_)
+
+
+def load(path):
+    with open(path, 'rb') as file_:
+        return pickle.load(file_)
+
+
 def run_q():
     trials = 10e5
     env = Game()
@@ -175,24 +159,25 @@ def run_q():
     last = time.time()
 
     for episode in xrange(int(trials)):
-        error = 0.0
+        max_error = 0.0
         state, rewards, done = env.reset()
 
         while not done:
             action_a = Qa.get_best_action(state)
             action_b = Qb.get_best_action(state)
             next_state, rewards, done = env.step((action_a, action_b))
-            error += Qa.update(state, action_a, next_state, rewards.get('A'))
+            error = Qa.update(state, action_a, next_state, rewards.get('A'))
+            max_error = error if error > max_error else max_error
             Qb.update(state, action_b, next_state, rewards.get('B'))
             state = next_state
             # env.plot_grid()
 
         if time.time() - last > 5:
             last = time.time()
-            print 100 * (episode / trials), error
+            print 100 * (episode / trials), max_error
             # plot(error_by_trial)
 
-        error_by_trial.append(error)
+        error_by_trial.append(max_error)
 
     return error_by_trial
 
@@ -230,5 +215,5 @@ def run_ceq():
 
 if __name__ == '__main__':
     plt.ion()
-    error = run_ceq()
-    # error = run_q()
+    # error = run_ceq()
+    error = run_q()

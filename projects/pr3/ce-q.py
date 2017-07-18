@@ -5,133 +5,113 @@ from collections import defaultdict
 import cPickle as pickle
 import numpy as np
 import matplotlib.pyplot as plt
-import itertools
 import time
+from cvxopt import matrix, solvers
 
 
-class QAgent(object):
-    def __init__(self, num_actions=5):
-        self.Q = {}
-        self.state_count = defaultdict(int)
-        self.gamma = 0.99
-        self.epsilon = 0.01
-        self.num_actions = num_actions
-
-    def update(self, state, action, next_state, reward):
-        self.state_count[(state, action)] += 1
-
-        if state not in self.Q:
-            self.Q[state] = np.zeros(self.num_actions)
-        if next_state not in self.Q:
-            self.Q[next_state] = np.zeros(self.num_actions)
-
-        old_Q = self.Q[state][action]
-
-        alpha = 1.0 / self.state_count[(state, action)]
-        self.Q[state][action] = (
-            (1 - alpha) * self.Q[state][action] +
-            alpha * (reward + self.gamma * np.max(self.Q[next_state]))
-        )
-        return abs(self.Q[state][action] - old_Q)
-
-    def get_best_action(self, state):
-        greedy = (
-            state in self.Q and
-            np.random.uniform() > self.epsilon and
-            np.sum(self.Q[state]) > 0
-        )
-        if greedy:
-            return np.argmax(self.Q[state])
-        else:
-            return np.random.randint(self.num_actions)
-
-
-class CEQAgent(object):
-    def __init__(self, num_actions=5, num_players=2, policy='u'):
+class Agent(object):
+    def __init__(self, num_actions=5, num_players=2, policy='q', debug=False):
+        self.debug = debug
         self.Q = [{}, {}]
         self.alpha = 0.001
         self.gamma = 0.9
         self.epsilon = 0.001
-        self.num_actions = num_actions
+        self.actions = np.zeros((num_actions, num_actions))
         self.num_players = num_players
+        self.state_count = defaultdict(int)
+        self.policy = policy
         self.policy_func = {
-            'u': self._utilitarian,
-            'e': self._egalitarian,
-            'r': self._republican,
-            'l': self._libertarian,
+            'ce-q': self._ce,
+            'foe-q': self._foe,
+            'friend-q': self._friend,
+            'q': self._q,
         }.get(policy)
-        self.action_permutations = [
-            i for i in itertools.permutations(range(num_actions), num_players)
-        ]
 
-    def _utilitarian(self, Q):
-        '''Maximize sum of all rewards.'''
-        return np.concatenate(Q).flatten() * -1
+    def get(self, player, state, actions=None):
+        if state in self.Q[player]:
+            if actions is not None:
+                return self.Q[player][state][actions[0]][actions[1]]
+            else:
+                return self.Q[player][state]
+        else:
+            return 0.0
 
-    def _egalitarian(self, state):
+    def set(self, player, state, actions, value):
+        if state not in self.Q[player]:
+            self.Q[player][state] = np.array(self.actions)
+        self.Q[player][state][actions[0]][actions[1]] = value
+
+    def _q(self, player, state):
+        return np.max(self.get(player, state))
+
+    def _ce(self, player, state):
+        Q0 = self.get(0, state)
+        Q1 = self.get(1, state)
+        # Rationality constraints
+        A1 = np.array(self.actions)
+        A2 = np.array(self.actions)
+        for i in np.eye(self.actions.shape[0], dtype=bool):
+            A1[i] = Q0[np.invert(i), :] - Q0[i, :]
+            A2[:, i] = Q1[:, np.invert(i)] - Q1[:, i]
+
+        # Probs sum to one
+        A = np.vstack(list(np.eye(self.actions.size) * -1) +  # each prob >= 0
+                      [
+                        A1.flatten(),  # rationality for P1
+                        A2.flatten(),  # rationality for P2
+                        np.ones((1, self.actions.size)),  # sum of probs = 1
+                        np.ones((1, self.actions.size)) * -1,
+                    ])
+        b = np.zeros(len(A))
+        b[-2:] = 1
+        A = matrix(A)
+        b = matrix(b)
+        c = matrix((Q0 + Q1).flatten() * -1)
+
+        sol = solvers.lp(c, A, b)
+
+        p = np.array(sol['x']).reshape(self.actions.shape)
+        return np.sum(self.Q[player] * p)
+
+    def _foe(self, player, state):
         pass
 
-    def _republican(self, state):
+    def _friend(self, player, state):
         pass
-
-    def _libertarian(self, state):
-        pass
-
-    def ce_value(self, player, state):
-        Q = [self.Q[i][state] for i in self.num_players]
-        # Get objective function based on policy
-        c = self.policy_func(Q)
-
-        # Make the sum of probabilities == 1
-        A_eq = np.ones((1, len(self.action_permutations)))
-        b_eq = np.array([1.0])
-
-        # Build upper bound constraints
-        A_ub = []
-
-        # Make each probability >= 0
-        A_ub.extend(list(np.eye(self.num_actions) * -1))
-
-        # Build rationality constraints
-
-
-
 
     def update(self, state, actions, next_state, rewards):
-        a1, a2 = actions
-        for player in xrange(self.num_players):
-            if state not in self.Q[player]:
-                self.Q[player][state] = np.zeros((self.num_actions,
-                                                  self.num_actions))
-            if next_state not in self.Q:
-                self.Q[player][next_state] = np.zeros((self.num_actions,
-                                                       self.num_actions))
-        old_Q = self.Q[0][state][a1][a2]
+        self.state_count[(state, actions)] += 1
+        alpha = 1.0 / self.state_count[(state, actions)]
 
         for player in xrange(self.num_players):
-            V = self.ce_value(player, next_state)
-
-            self.Q[player][state][a1][a2] += (
-                (1 - self.alpha) * self.Q[player][state][a1][a2] +
-                self.alpha * (1 - self.gamma) * rewards[player] +
-                self.gamma * V
+            q_value = self.get(player, state, actions)
+            V_next_state = self.policy_func(player, next_state)
+            q_value = (
+                (1 - alpha) * q_value +
+                alpha * ((1 - self.gamma) * rewards[player] +
+                         self.gamma * V_next_state)
             )
-
-        return abs(self.Q[0][state][a1][a2] - old_Q)
+            if self.debug:
+                print q_value, alpha, self.gamma, rewards[player], V_next_state
+                print 'q', q_value, 'V', V_next_state, rewards
+            self.set(player, state, actions, q_value)
 
     def get_best_actions(self, state):
         actions = []
         for player in xrange(self.num_players):
             greedy = (
+                # TODO should non q agents have greedy actions?
+                self.policy == 'q' and
                 state in self.Q[player] and
                 np.random.uniform() > self.epsilon and
                 np.sum(self.Q[player][state]) > 0
             )
             if greedy:
-                actions.append(
-                    np.argmax(self.Q[player][state]) % self.num_actions)
+                index = np.argmax(self.Q[player][state])
+                index = np.unravel_index(index, self.actions.shape)
+                actions.append(index[player])
             else:
-                actions.append(np.random.randint(self.num_actions))
+                actions.append(np.random.randint(self.actions.shape[0]))
         return tuple(actions)
 
 
@@ -150,70 +130,48 @@ def load(path):
         return pickle.load(file_)
 
 
-def run_q():
-    trials = 10e5
+def run_trial(policy, trials=10e5):
     env = Game()
-    Qa = QAgent()
-    Qb = QAgent()
-    error_by_trial = []
+    agent = Agent(debug=False)
+    x, y = [], []
     last = time.time()
+    test_player = 0
+    test_state = 'B21'
+    test_actions = (1, 4)
+    done = True
 
     for episode in xrange(int(trials)):
-        max_error = 0.0
-        state, rewards, done = env.reset()
+        if done:
+            state, rewards, done = env.reset()
+        actions = agent.get_best_actions(state)
+        next_state, rewards, done = env.step(actions)
+        rewards = (rewards['A'], rewards['B'])
 
-        while not done:
-            action_a = Qa.get_best_action(state)
-            action_b = Qb.get_best_action(state)
-            next_state, rewards, done = env.step((action_a, action_b))
-            error = Qa.update(state, action_a, next_state, rewards.get('A'))
-            max_error = error if error > max_error else max_error
-            Qb.update(state, action_b, next_state, rewards.get('B'))
-            state = next_state
-            # env.plot_grid()
+        q = agent.get(test_player, test_state, test_actions)
+        agent.update(state, actions, next_state, rewards)
 
-        if time.time() - last > 5:
-            last = time.time()
-            print 100 * (episode / trials), max_error
-            # plot(error_by_trial)
+        if state == test_state and actions == test_actions:
+            delta = abs(q - agent.get(test_player, test_state, test_actions))
+            print delta
+            x.append(episode)
+            y.append(delta)
 
-        error_by_trial.append(max_error)
+        state = next_state
+        # print actions
+        # env.plot_grid()
 
-    return error_by_trial
+    if time.time() - last > 5:
+        last = time.time()
+        print 100 * (episode / float(trials))
+        # plot(error_by_trial)
 
+    # print agent.Q[0].keys()
 
-def run_ceq():
-    trials = 10e5
-    env = Game()
-    Q = CEQAgent()
-    error_by_trial = []
-    last = time.time()
-
-    for episode in xrange(int(trials)):
-        error = 0.0
-        state, rewards, done = env.reset()
-
-        while not done:
-            actions = Q.get_best_actions(state)
-            next_state, rewards, done = env.step(actions)
-            rewards = (rewards['A'], rewards['B'])
-            error += Q.update(state, actions, next_state, rewards)
-            state = next_state
-            # env.plot_grid()
-
-        if time.time() - last > 5:
-            last = time.time()
-            print 100 * (episode / trials), error
-            # plot(error_by_trial)
-
-        error_by_trial.append(error)
-
-    return error_by_trial
+    return agent, (x, y)
 
     # print "actions: [N: 0, S: 1, E: 2, W: 3, Stay: 4] \n"
 
 
 if __name__ == '__main__':
     plt.ion()
-    # error = run_ceq()
-    error = run_q()
+    # error = run_trial('q')

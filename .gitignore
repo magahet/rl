@@ -1,5 +1,6 @@
 rl-audio/
 *.pyc
 *.swp
+*.swo
 .ropeproject/
 *.p

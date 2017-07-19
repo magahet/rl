@@ -69,18 +69,22 @@ class QAgent(object):
             return np.random.randint(self.actions.shape[0])
 
 
-class CEQAgent(object):
-    def __init__(self, num_actions=5, num_players=2, debug=False):
+class MAgent(object):
+    def __init__(self, policy='ce', num_actions=5, num_players=2, debug=False):
         self.debug = debug
         self.Q = [{}, {}]
         self.gamma = 0.9
         self.alpha = 1.0
         self.min_alpha = 0.001
-        self.alpha_decay = np.power(10, np.log(0.001) / 5e6)
+        self.alpha_decay = np.power(10, np.log(0.001) / 4e6)
         self.actions = np.zeros((num_actions, num_actions))
         self.num_players = num_players
         self.state_count = defaultdict(int)
-        self.policy_func = self._ce
+        self.policy_func = {
+            'ce': self._ce,
+            'foe': self._foe,
+            'friend': self._friend,
+        }.get(policy)
 
     def get(self, player, state, actions=None):
         if state in self.Q[player]:
@@ -135,12 +139,34 @@ class CEQAgent(object):
         return np.sum(self.get(player, state) * p)
 
     def _foe(self, player, state):
-        # Maximize V
-        # Constraints:
-        #     Sum( probabilities action is chosen ) = 1
-        #     For Each action J:
-        #     Sum( Probability[i] * Q[ i, j ] ) - V >= 0
-        pass
+        Q = self.get(player, state)
+
+        G = np.vstack((
+            np.concatenate((np.eye(Q.shape[0]),
+                            np.zeros((Q.shape[0], 1))), axis=1) * -1,
+            np.concatenate((Q.T * -1, np.ones((Q.shape[1], 1))), axis=1)
+        ))
+        h = np.zeros(len(G))
+        A = np.ones((1, len(Q) + 1))
+        A[0][-1] = 0
+        b = np.ones(1)
+
+        c = np.zeros(len(Q) + 1)
+        c[-1] = -1
+
+        G = matrix(G)
+        h = matrix(h)
+        A = matrix(A)
+        b = matrix(b)
+        c = matrix(c)
+
+        sol = solvers.lp(c, G, h, A, b, solver='cvxopt_glpk')
+        x = sol.get('x')
+        v = x[-1] if x is not None else 0.0
+        if player == 0:
+            return v
+        else:
+            return -v
 
     def _friend(self, player, state):
         pass
@@ -148,7 +174,10 @@ class CEQAgent(object):
     def update(self, state, actions, next_state, rewards):
         for player in xrange(self.num_players):
             q_value = self.get(player, state, actions)
-            V_next_state = self.policy_func(player, next_state)
+            if np.sum(self.get(player, next_state)) == 0:
+                V_next_state = 0.0
+            else:
+                V_next_state = self.policy_func(player, next_state)
             # if self.debug and q_value:
             #     print 'before q', q_value, 'V', V_next_state, rewards
             q_value = (
@@ -188,7 +217,7 @@ def load(path):
         return pickle.load(file_)
 
 
-def run_q(trials=10e5, dplot=False, debug=False):
+def run_q(policy, trials=10e5, dplot=False, debug=False):
     env = Game()
     agents = [QAgent(debug=debug) for _ in xrange(2)]
     x, y = [], []
@@ -233,9 +262,9 @@ def run_q(trials=10e5, dplot=False, debug=False):
     return agents, (x, y)
 
 
-def run_ceq(trials=10e5, dplot=False, debug=False):
+def run_m(policy, trials=10e5, dplot=False, debug=False):
     env = Game()
-    agent = CEQAgent(debug=debug)
+    agent = MAgent(policy=policy, debug=debug)
     x, y = [], []
     last = time.time()
     last_x = 0
@@ -286,8 +315,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
     func = {
         'q': run_q,
-        'ceq': run_ceq,
+        'ce': run_m,
+        'foe': run_m,
+        'friend': run_m,
     }
 
-    a, e = func[args.policy](args.trials, args.plot, args.debug)
+    a, e = func[args.policy](args.policy, args.trials, args.plot, args.debug)
     plot(e)

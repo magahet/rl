@@ -23,8 +23,6 @@ class QAgent(object):
         self.alpha_decay = np.power(10, np.log(0.001) / 5e6)
         self.epsilon_decay = np.power(10, np.log(0.001) / 5e6)
         self.actions = np.zeros(num_actions)
-        self.state_count = defaultdict(int)
-        self.state_action_count = defaultdict(int)
 
     def get(self, state, action=None):
         if state in self.Q:
@@ -44,7 +42,6 @@ class QAgent(object):
         self.Q[state][action] = value
 
     def update(self, state, action, next_state, reward):
-        self.state_action_count[(state, action)] += 1
         last_q_value = self.get(state, action)
         V_next_state = np.max(self.get(next_state))
         q_value = (
@@ -54,12 +51,12 @@ class QAgent(object):
         )
         self.alpha = max(self.alpha * self.alpha_decay, self.min_alpha)
         if state == 'B21' and action == 1 and self.debug:
-            print self.state_action_count.get(('B21', 1))
+            pass
             # print alpha, reward, last_q_value, V_next_state, q_value
+
         self.set(state, action, q_value)
 
     def get_best_actions(self, state):
-        self.state_count[state] += 1
         greedy = (
             state in self.Q and
             np.random.uniform() > self.epsilon and
@@ -77,15 +74,18 @@ class CEQAgent(object):
         self.debug = debug
         self.Q = [{}, {}]
         self.gamma = 0.9
+        self.alpha = 1.0
+        self.min_alpha = 0.001
+        self.alpha_decay = np.power(10, np.log(0.001) / 5e6)
         self.actions = np.zeros((num_actions, num_actions))
         self.num_players = num_players
         self.state_count = defaultdict(int)
+        self.policy_func = self._ce
 
     def get(self, player, state, actions=None):
         if state in self.Q[player]:
             if actions is not None:
-                Q = self.Q[player][state]
-                return Q[actions]
+                return self.Q[player][state][actions[0]][actions[1]]
             else:
                 return self.Q[player][state]
         else:
@@ -130,6 +130,8 @@ class CEQAgent(object):
         sol = solvers.lp(c, G, h, A, b, solver='cvxopt_glpk')
 
         p = np.array(sol['x']).reshape(self.actions.shape)
+        # if self.debug and state == 'B21':
+        #     print p.flatten()
         return np.sum(self.get(player, state) * p)
 
     def _foe(self, player, state):
@@ -144,30 +146,26 @@ class CEQAgent(object):
         pass
 
     def update(self, state, actions, next_state, rewards):
-        self.state_count[(state, actions)] += 1
-        alpha = 1.0 / self.state_count[(state, actions)]
-
         for player in xrange(self.num_players):
-            if self.policy == 'q':
-                q_value = self.get(player, state, actions[player])
-            else:
-                q_value = self.get(player, state, actions)
+            q_value = self.get(player, state, actions)
             V_next_state = self.policy_func(player, next_state)
+            # if self.debug and q_value:
+            #     print 'before q', q_value, 'V', V_next_state, rewards
             q_value = (
-                (1 - alpha) * q_value +
-                alpha * ((1 - self.gamma) * rewards[player] +
-                         self.gamma * V_next_state)
+                (1 - self.alpha) * q_value +
+                self.alpha * ((1 - self.gamma) * rewards[player] +
+                              self.gamma * V_next_state)
             )
-            if self.debug:
-                print q_value, alpha, self.gamma, rewards[player], V_next_state
-                print 'q', q_value, 'V', V_next_state, rewards
-            if self.policy == 'q':
-                self.set(player, state, actions[player], q_value)
-            else:
-                self.set(player, state, actions, q_value)
+            # if self.debug and q_value:
+            #     print 'after q', q_value, 'V', V_next_state, rewards
+            self.set(player, state, actions, q_value)
+
+        self.alpha = max(self.alpha * self.alpha_decay, self.min_alpha)
 
     def get_best_actions(self, state):
-        return [np.random.randint(self.actions.shape[0]) for _ in xrange(2)]
+        return tuple([
+            np.random.randint(self.actions.shape[0]) for _ in xrange(2)
+        ])
 
 
 def plot(data):
@@ -237,37 +235,39 @@ def run_q(trials=10e5, dplot=False, debug=False):
 
 def run_ceq(trials=10e5, dplot=False, debug=False):
     env = Game()
-    agent = QAgent(debug=debug)
+    agent = CEQAgent(debug=debug)
     x, y = [], []
     last = time.time()
     last_x = 0
     test_player = 0
     test_state = 'B21'
     test_actions = (1, 4)
+    done = True
 
-    state, rewards, done = env.reset()
     for episode in xrange(int(trials)):
         if done:
-            print env.plot_grid()
             state, rewards, done = env.reset()
 
         actions = agent.get_best_actions(state)
         next_state, rewards, done = env.step(actions)
         rewards = (rewards['A'], rewards['B'])
 
-        q = agent.get(test_player, state, actions)
+        q1 = agent.get(test_player, state, actions)
         agent.update(state, actions, next_state, rewards)
 
-        if state == test_state and actions in test_actions:
-            delta = abs(q - agent.get(test_player,
-                                      state, actions))
+        if state == test_state and actions == test_actions:
+            q2 = agent.get(test_player, state, actions)
+            # print q2, q1
+            delta = abs(q2 - q1)
+
             if delta:
                 x.append(episode)
                 y.append(delta)
 
-        if time.time() - last > 5:
+        if time.time() - last > 10:
             last = time.time()
-            print 100 * (episode / float(trials)), len(y)
+            avg = np.mean(y[-min(len(y), 100)]) if y else 0.0
+            print 100 * (episode / float(trials)), avg
             if dplot and len(x) > last_x:
                 last_x == len(x)
                 plot((x, y))
@@ -286,6 +286,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     func = {
         'q': run_q,
+        'ceq': run_ceq,
     }
 
     a, e = func[args.policy](args.trials, args.plot, args.debug)

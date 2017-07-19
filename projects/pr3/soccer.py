@@ -1,5 +1,7 @@
 import copy
+import random
 import numpy as np
+
 
 # Set a random seed if same results need to be replicated
 # np.random.seed(10)
@@ -306,9 +308,17 @@ class Game(object):
     def __init__(self):
         self.reset()
 
-    def reset(self, debug=False):
-        self.player_a = Player(x=2, y=0, has_ball=False, p_id='A')
-        self.player_b = Player(x=1, y=0, has_ball=True, p_id='B')
+    def reset(self, place_random=False, debug=False):
+        if place_random:
+            x, y = 4, 2
+            x1, x2 = random.sample(range(x), 2)
+            y1, y2 = random.sample(range(y), 2)
+            b1, b2 = random.sample([True, False], 2)
+            self.player_a = Player(x=x1, y=y1, has_ball=b1, p_id='A')
+            self.player_b = Player(x=x2, y=y2, has_ball=b2, p_id='B')
+        else:
+            self.player_a = Player(x=2, y=0, has_ball=False, p_id='A')
+            self.player_b = Player(x=1, y=0, has_ball=True, p_id='B')
         self.world = World()
         self.world.set_world_size(x=4, y=2)
         self.world.place_player(self.player_a, player_id='A')

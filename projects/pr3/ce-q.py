@@ -70,7 +70,8 @@ class QAgent(object):
 
 
 class MAgent(object):
-    def __init__(self, policy='ce', num_actions=5, num_players=2, debug=False):
+    def __init__(self, policy='ce', num_actions=5, num_players=2,
+                 alpha=1.0, debug=False):
         self.debug = debug
         self.Q = [{}, {}]
         self.gamma = 0.9
@@ -169,7 +170,7 @@ class MAgent(object):
             return -v
 
     def _friend(self, player, state):
-        pass
+        return np.max(self.get(player, state))
 
     def update(self, state, actions, next_state, rewards):
         for player in xrange(self.num_players):
@@ -217,9 +218,9 @@ def load(path):
         return pickle.load(file_)
 
 
-def run_q(policy, trials=10e5, dplot=False, debug=False):
+def run_q(args):
     env = Game()
-    agents = [QAgent(debug=debug) for _ in xrange(2)]
+    agents = [QAgent(debug=args.debug) for _ in xrange(2)]
     x, y = [], []
     last = time.time()
     last_x = 0
@@ -228,7 +229,7 @@ def run_q(policy, trials=10e5, dplot=False, debug=False):
     test_action = 1
     done = True
 
-    for episode in xrange(int(trials)):
+    for episode in xrange(int(args.trials)):
         if done:
             state, rewards, done = env.reset()
 
@@ -252,8 +253,8 @@ def run_q(policy, trials=10e5, dplot=False, debug=False):
         if time.time() - last > 10:
             last = time.time()
             avg = np.mean(y[-min(len(y), 100)]) if y else 0.0
-            print 100 * (episode / float(trials)), avg
-            if dplot and len(x) > last_x:
+            print 100 * (episode / float(args.trials)), avg
+            if args.plot and len(x) > last_x:
                 last_x == len(x)
                 plot((x, y))
 
@@ -262,9 +263,9 @@ def run_q(policy, trials=10e5, dplot=False, debug=False):
     return agents, (x, y)
 
 
-def run_m(policy, trials=10e5, dplot=False, debug=False):
+def run_m(args):
     env = Game()
-    agent = MAgent(policy=policy, debug=debug)
+    agent = MAgent(policy=args.policy, alpha=args.alpha, debug=args.debug)
     x, y = [], []
     last = time.time()
     last_x = 0
@@ -273,7 +274,7 @@ def run_m(policy, trials=10e5, dplot=False, debug=False):
     test_actions = (1, 4)
     done = True
 
-    for episode in xrange(int(trials)):
+    for episode in xrange(int(args.trials)):
         if done:
             state, rewards, done = env.reset()
 
@@ -296,8 +297,8 @@ def run_m(policy, trials=10e5, dplot=False, debug=False):
         if time.time() - last > 10:
             last = time.time()
             avg = np.mean(y[-min(len(y), 100)]) if y else 0.0
-            print 100 * (episode / float(trials)), avg
-            if dplot and len(x) > last_x:
+            print 100 * (episode / float(args.trials)), avg
+            if args.plot and len(x) > last_x:
                 last_x == len(x)
                 plot((x, y))
 
@@ -312,6 +313,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--plot', dest='plot', action='store_true')
     parser.add_argument('-d', '--debug', action='store_true')
     parser.add_argument('-t', '--trials', type=int, default=10e5)
+    parser.add_argument('-a', '--alpha', type=float, default=1.0)
     args = parser.parse_args()
     func = {
         'q': run_q,
@@ -320,5 +322,5 @@ if __name__ == '__main__':
         'friend': run_m,
     }
 
-    a, e = func[args.policy](args.policy, args.trials, args.plot, args.debug)
+    a, e = func[args.policy](args)
     plot(e)

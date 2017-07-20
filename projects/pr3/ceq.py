@@ -50,10 +50,6 @@ class QAgent(object):
                           self.gamma * V_next_state)
         )
         self.alpha = max(self.alpha * self.alpha_decay, self.min_alpha)
-        if state == 'B21' and action == 1 and self.debug:
-            pass
-            # print alpha, reward, last_q_value, V_next_state, q_value
-
         self.set(state, action, q_value)
 
     def get_best_actions(self, state):
@@ -72,6 +68,7 @@ class QAgent(object):
 class MAgent(object):
     def __init__(self, policy='ce', num_actions=5, num_players=2,
                  alpha=1.0, debug=False):
+        self.policy = policy
         self.debug = debug
         self.Q = [{}, {}]
         self.gamma = 0.9
@@ -86,6 +83,7 @@ class MAgent(object):
             'foe': self._foe,
             'friend': self._friend,
         }.get(policy)
+        self.count = defaultdict(int)
 
     def get(self, player, state, actions=None):
         if state in self.Q[player]:
@@ -135,8 +133,6 @@ class MAgent(object):
         sol = solvers.lp(c, G, h, A, b, solver='cvxopt_glpk')
 
         p = np.array(sol['x']).reshape(self.actions.shape)
-        # if self.debug and state == 'B21':
-        #     print p.flatten()
         return np.sum(self.get(player, state) * p)
 
     def _foe(self, player, state):
@@ -173,21 +169,20 @@ class MAgent(object):
         return np.max(self.get(player, state))
 
     def update(self, state, actions, next_state, rewards):
+        self.count[(state, actions)] += 1
+        if self.policy == 'friend':
+            self.alpha = 1.0 / self.count[(state, actions)]
         for player in xrange(self.num_players):
             q_value = self.get(player, state, actions)
             if np.sum(self.get(player, next_state)) == 0:
                 V_next_state = 0.0
             else:
                 V_next_state = self.policy_func(player, next_state)
-            # if self.debug and q_value:
-            #     print 'before q', q_value, 'V', V_next_state, rewards
             q_value = (
                 (1 - self.alpha) * q_value +
                 self.alpha * ((1 - self.gamma) * rewards[player] +
                               self.gamma * V_next_state)
             )
-            # if self.debug and q_value:
-            #     print 'after q', q_value, 'V', V_next_state, rewards
             self.set(player, state, actions, q_value)
 
         self.alpha = max(self.alpha * self.alpha_decay, self.min_alpha)

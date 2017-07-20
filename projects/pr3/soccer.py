@@ -330,7 +330,9 @@ class Game(object):
         return self.world.map_player_state(), 0, False
 
     def step(self, actions):
-        return self.world.move({'A': actions[0], 'B': actions[1]})
+        state, rewards, done = self.world.move(
+            {'A': actions[0], 'B': actions[1]})
+        return state, (rewards['A'], rewards['B']), done
 
     def plot_grid(self):
         return self.world.plot_grid()

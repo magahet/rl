@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-from soccer import Game
+from game import Soccer
 from collections import defaultdict
 import cPickle as pickle
 import numpy as np
@@ -219,14 +219,14 @@ def load(path):
 
 
 def run_q(args):
-    env = Game()
+    env = Soccer()
     agents = [QAgent(debug=args.debug) for _ in xrange(2)]
     x, y = [], []
     last = time.time()
     last_x = 0
     test_player = 0
-    test_state = 'B21'
-    test_action = 1
+    test_state = '[(2, 1), (1, 1)],1'
+    test_action = 2
     done = True
 
     for episode in xrange(int(args.trials)):
@@ -235,8 +235,6 @@ def run_q(args):
 
         actions = [a.get_best_actions(state) for a in agents]
         next_state, rewards, done = env.step(actions)
-        # print state, actions, next_state, rewards, done
-        rewards = (rewards['A'], rewards['B'])
 
         q1 = agents[test_player].get(state, actions[test_player])
         for num, agent in enumerate(agents):
@@ -264,14 +262,14 @@ def run_q(args):
 
 
 def run_m(args):
-    env = Game()
+    env = Soccer()
     agent = MAgent(policy=args.policy, alpha=args.alpha, debug=args.debug)
     x, y = [], []
     last = time.time()
     last_x = 0
     test_player = 0
-    test_state = 'B21'
-    test_actions = (1, 4)
+    test_state = '[(2, 1), (1, 1)],1'
+    test_actions = (2, 4)
     done = True
 
     for episode in xrange(int(args.trials)):
@@ -280,14 +278,12 @@ def run_m(args):
 
         actions = agent.get_best_actions(state)
         next_state, rewards, done = env.step(actions)
-        rewards = (rewards['A'], rewards['B'])
 
         q1 = agent.get(test_player, state, actions)
         agent.update(state, actions, next_state, rewards)
 
         if state == test_state and actions == test_actions:
             q2 = agent.get(test_player, state, actions)
-            # print q2, q1
             delta = abs(q2 - q1)
 
             if delta:

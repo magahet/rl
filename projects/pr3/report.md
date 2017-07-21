@@ -24,10 +24,16 @@ The Q-learning experiment used two separate agents and Q tables for each player.
 Initial $\alpha$ was set to 0.3, and decayed exponentially with a decay factor of $10^{log(0.001)/5e6}$. The decay factor was inspired by [@littman01a] and both of these hyper-parameters required experimentation to find appropriate values. [@Greenwald:2003:CL:3041838.3041869] only specifies that $\alpha$ should decay to a minimum value of 0.001. The same decay schedule was used on $\epsilon$. The Q-learning agent was the only one run on-policy, with $\epsilon$-greedy actions. All other agents choose actions at random.
 
 ### Multi-Agent Learners
-Foe-Q, Friend-Q, and CE-Q all used an initial $\alpha$ of 1.0. Friend-Q used a decay schedule explained in [@greenwald2005correlated] as $\alpha = 1 / n(s,a)$. All other agents used the same exponential decay as Q-learning, with a decay rate of $10^{log(0.001)/4e6}$.
+Foe-Q, Friend-Q, and uCE-Q all used an initial $\alpha$ of 1.0. Friend-Q used a decay schedule explained in [@greenwald2005correlated] as $\alpha = 1 / n(s,a)$. All other agents used the same exponential decay as Q-learning, with a decay rate of $10^{log(0.001)/4e6}$.
 
 **Foe-Q** --
-Foe-Q's value function was $V_i(s) = \underset{\sigma_1 \in \sum_1(s)}{\mathrm{max}} \underset{a_1 \in A_2(s)}{\mathrm{min}} \sum_{a_1 \in A_1} \sigma_1(a_1)Q(s, a_1, a_2)$. Linear programming was used to find this value with 
+The value function for Foe-Q was taken from equation 5 in [@Greenwald:2003:CL:3041838.3041869]. Linear programming was used to find this value with probability constraints on the mixed strategy distribution (sum = 1, each $\geq$ 0) across the player's actions. Minimax constraints were modeled as $V - \sum_{a_1 \in A_1} \sigma_1(a_1)Q(s, a_1, a_2) \leq 0$ $\forall a_2 \in A_2(s)$, with the objective function to maximize V.
+
+**Friend-Q** --
+The value function for Friend-Q was simply the max Q value across all joint actions.
+
+**uCE-Q** --
+The correlated equilibrium was calculated with the player's Q table
 
 
 

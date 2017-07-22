@@ -1,6 +1,8 @@
 import copy
 import random
 import numpy as np
+random.seed(42)
+np.random.seed(42)
 
 
 # Set a random seed if same results need to be replicated

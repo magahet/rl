@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import time
 from cvxopt import matrix, solvers
 solvers.options['show_progress'] = False
+np.random.seed(42)
 
 
 class QAgent(object):
@@ -106,17 +107,21 @@ class MAgent(object):
         Q0 = self.get(0, state)
         Q1 = self.get(1, state)
         # Rationality constraints
-        A1 = np.array(self.actions)
-        A2 = np.array(self.actions)
+        G_rationality = []
         for i in np.eye(self.actions.shape[0], dtype=bool):
-            A1[i] = np.sum(Q0[np.invert(i), :] - Q0[i, :], axis=0)
-            A2[:, i] = np.vstack(np.sum(Q1[:, np.invert(i)] - Q1[:, i], axis=1))
+            for j in np.eye(self.actions.shape[0], dtype=bool):
+                if np.array_equal(i, j):
+                    continue
+                G0 = np.array(self.actions)
+                G0[i] = Q0[j, :] - Q0[i, :]
+                G1 = np.array(self.actions)
+                G1[:, i] = np.vstack(Q1[:, j] - Q1[:, i])
+                G_rationality.append(G0.flatten())
+                G_rationality.append(G1.flatten())
 
-        G = np.vstack(list(np.eye(self.actions.size) * -1) +  # each prob >= 0
-                      [
-                        A1.flatten(),  # rationality for P1
-                        A2.flatten(),  # rationality for P2
-                    ])
+        # each prob >= 0
+        G_prob = list(np.eye(self.actions.size) * -1)
+        G = np.vstack(G_prob + G_rationality)
 
         h = np.zeros(len(G))
         A = np.vstack([

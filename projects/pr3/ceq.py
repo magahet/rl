@@ -198,10 +198,11 @@ class MAgent(object):
         ])
 
 
-def plot(data):
+def plot(data, title):
     x, y = data
     plt.ion()
     plt.ylim((0, 0.5))
+    plt.title(title)
     plt.ylabel('Q-value Difference')
     plt.xlabel('Simulation Iteration')
     plt.plot(x, y, linewidth=0.2, color='black')
@@ -218,7 +219,7 @@ def load(path):
         return pickle.load(file_)
 
 
-def run_q(args):
+def run_q(args, title):
     env = Soccer()
     agents = [QAgent(debug=args.debug) for _ in xrange(2)]
     x, y = [], []
@@ -254,14 +255,14 @@ def run_q(args):
             print 100 * (episode / float(args.trials)), avg
             if args.plot and len(x) > last_x:
                 last_x == len(x)
-                plot((x, y))
+                plot((x, y), title)
 
         state = next_state
 
     return agents, (x, y)
 
 
-def run_m(args):
+def run_m(args, title):
     env = Soccer()
     agent = MAgent(policy=args.policy, alpha=args.alpha, debug=args.debug)
     x, y = [], []
@@ -296,7 +297,7 @@ def run_m(args):
             print 100 * (episode / float(args.trials)), avg
             if args.plot and len(x) > last_x:
                 last_x == len(x)
-                plot((x, y))
+                plot((x, y), title)
 
         state = next_state
 
@@ -318,5 +319,10 @@ if __name__ == '__main__':
         'friend': run_m,
     }
 
-    a, e = func[args.policy](args)
-    plot(e)
+    title = {
+        'ceq': 'Correlated-Q',
+        'foe': 'Foe-Q',
+        'friend': 'Friend-Q',
+    }.get(args.policy)
+    a, e = func[args.policy](args, title)
+    plot(e, title)

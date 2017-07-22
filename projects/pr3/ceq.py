@@ -199,24 +199,14 @@ class MAgent(object):
 
 
 def plot(data, title):
+    f, ax = plt.subplots()
     x, y = data
-    plt.ion()
-    plt.ylim((0, 0.5))
-    plt.title(title)
-    plt.ylabel('Q-value Difference')
-    plt.xlabel('Simulation Iteration')
-    plt.plot(x, y, linewidth=0.2, color='black')
-    plt.pause(0.05)
-
-
-def save(data, path):
-    with open(path, 'wb') as file_:
-        pickle.dump(data, file_)
-
-
-def load(path):
-    with open(path, 'rb') as file_:
-        return pickle.load(file_)
+    ax.set_ylim((0, 0.5))
+    ax.set_title(title)
+    ax.set_ylabel('Q-value Difference')
+    ax.set_xlabel('Simulation Iteration')
+    ax.plot(x, y, linewidth=0.2, color='black')
+    return f
 
 
 def run_q(args, title):
@@ -320,9 +310,11 @@ if __name__ == '__main__':
     }
 
     title = {
-        'ceq': 'Correlated-Q',
+        'q': 'Q-Learner',
+        'ce': 'Correlated-Q',
         'foe': 'Foe-Q',
         'friend': 'Friend-Q',
     }.get(args.policy)
     a, e = func[args.policy](args, title)
-    plot(e, title)
+    f = plot(e, title)
+    f.savefig('{}.png'.format(args.policy))

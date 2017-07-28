@@ -1,0 +1,86 @@
+modular RL
+    separate, competing goals that are all running concurrently. There are different strategies to deal with selecting which action to choose while all of these agents provide feedback on their preferred action.
+     
+     The arbitration techniques touched on in the lecture are:
+     * greatest mass: add up all the q-values for the different qlearners and pick the action that has the highest
+     * top q-learning: simply pick the highest valued agent's action
+     * negotiated w-learning: agent with the most to lose gets to have action taken. try and minimize losses.
+      
+      And then Arrow's Impossibility result states that because each agent has different q value meanings, it's not possible to construct a fair vote. One agent may have different units than another which could outweight other votes.
+    
+
+Grim Trigger
+    Grim Trigger is were I will cooperate with you, but if you screw me, I will screw you FOR ALL TIME.
+    Grim trigger is basically a hollow threat as the person is not being rational while giving that threat. 
+
+POMDPs
+    Any value function at any step can be represented as a maximum function over a set of linear inputs that represent the belief probability distribution
+    Exact optimal answer for RL in POMDPs is undecidable, even with infinite exposure it is impossible to know the exact answer
+    
+    
+
+COCO
+    "cooperative/competitive." Allow side payments as part of the game
+     They're efficiently computable
+     They maximize utility
+     They neatly decompose the game into the sum of two games
+     They are unique (as opposed to Nash, where there may be multiple equilibria)
+     They can be extended to stochastic games (e.g. CoCo-Q, which converges despite the CoCo operator not being a non-expansion)
+     The values are not necessarily an equilibrium (that is, they might not be what the players want to do; therefore, the side payment structure is binding).
+     CoCo values are Pareto optimal (they'll pick the outcome that maximizes the total reward)
+     It doesn't necessarily extend beyond two players (it hasn't been proved that you can't do it, but it also isn't clear that you can).
+
+DEC-POMDP
+    Agents don’t share a brain but share a goal (the common good). Benefit from communicating.
+    DEC-POMDPs are planning: make strategy in advance
+    NEXP-complete (for finite-horizon): Non­deterministic exponential time complete
+
+Bayesian RL
+    reinforcement learning as being itself a POMDP. RL becomes planning in a continuous space POMDP instead of learning, and the hidden state is the parameters of the MDP that we're trying to solve.  Technique to optimally balance exploration and exploitation.  instead of imagining all possible MDPs, think about a smaller set and figure out how to maximize reward across that set.
+     
+     you can show that the value function in the continuous MDP is piecewise polynomial and convex with the polynomial degree growing with higher number of value iterations.  There exist Bayesian RL algorithms to solve the polynomial.  Practically speaking, Bayesian RL tends to be too expensive, Q-learning tends to win out.  
+      
+      An example application is approximating the probability distribution over Q functions to determine probability of an action being optimal allowing you to compare varying sources of information because they are all represented as probabilities (Isbell, et. al.)
+
+Reward shaping is important for sure. So, how does changing the rewards affect the optimal policy??
+    If I understand correctly, it shouldn't affect the optimal policy.  It should just make it faster to find the optimal policy if you're doing it correctly.  That's the whole reason that you assign the rewards for potential based shaping to states, and then take away those rewards when the learner moves away from those states.
+    The wrong shaping can put you into a sub-optimal loop but that can be solved by the potential function.
+
+What are the advantages and disadvantages of function approximators?? Ideas?
+    Advantages:
+    Function approximators help generalize the problem so you don't have to learn the correct action in all states.
+    There are general behaviors that are consistent in all or most states in many environments. For instance, in the lunar lander problem, the lander should generally be upright in all states, and should move down at a slower speed. Computationally, learning these common actions for all states is costly and wasteful
+     
+     Disadvantages:
+     Function approximators can tend to have trouble converging, depending on the problem space, initialization, hyperparameters, update sequence.. basically it's a complicated problem that can work if done well, but doing it well can be hard
+
+How about convergence when using function approximators?
+    Variations of linear function approximators tend to converge more consistently than nonlinear such as neural nets. Since we are making predictions based on previous predictions, any instability introduced can cause a lot of problems. If the function approximator is set up correctly it can work well.
+    Mark Wilson
+    Mark Wilson 21 hours ago According to Baird's counter example, convergence can be foiled with the right initial weights and the correct update sequence
+
+What are non-expansions again? Can you guys give some example of non-expansions?
+    Max, Min, statistical ordering, combination of convex functions
+
+How about the types of complexities? Did we talk about that?
+    The TRUE time complexity for any RL algorithm that is interacting with a simulation would also depend on both the sample complexity of the RL algorithm and the time complexity of the simulation, I think.  So you could write the time complexity of an RL algorithm for a given environment in terms of the size (or other parameters) of that environment.
+￼
+
+ Ok, so a good one here is "Infinite Horizon". But a nice question would be what happens when you make an infinite-horizon problem finite? Ideas?
+    Policy could change depending on time, violating the markovian property
+
+Credit assignment problem
+    Determining what state, action contributed to the overall reward for an episode.
+
+Contraction Mappings, is that in these lectures? :/
+    
+ 
+ Any ideas on how stationarity and the markov property play together if they do at all?
+
+
+Gittins index
+    Gittins index is a really cool solution to the multi-armed bandit problem. The index is a mapping from number of successes and number of pulls for a particular arm, such that always selecting the arm with the max index will be optimal.
+     
+     This is a way to explore the arms while maximizing reward. It does not generalize
+      Matt Wollerman
+      Matt Wollerman 21 hours ago Gittins index is only potentially only relevant for bandit problems. It is effectively a bound on the maximum expected discounted reward, i.e. how much reward would you want INSTEAD of pulling the current arm. It has to be greater than the value of the actual arm that you're evaluating, otherwise you'd end up pulling that arm.
